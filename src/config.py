@@ -1,7 +1,30 @@
 import os
+import sys
 import json
 import re
 from typing import Any, Dict
+
+def resolve_asset_path(relative_path: str) -> str:
+    """
+    Resolves relative path to assets working for both development environment
+    and packaged macOS PyInstaller bundle (.app).
+    """
+    if not relative_path:
+        return relative_path
+
+    if hasattr(sys, "_MEIPASS"):
+        # PyInstaller bundle directory
+        base_path = sys._MEIPASS
+    else:
+        # Development environment root directory
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    full_path = os.path.join(base_path, relative_path)
+    if os.path.exists(full_path):
+        return full_path
+    
+    # Fallback to current working directory
+    return os.path.abspath(relative_path)
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "reminder_interval_minutes": 30,
@@ -69,9 +92,9 @@ class ConfigManager:
 
     def get_user_gif(self, asset_type: str) -> str:
         """
-        Returns file path for user-specific GIF (e.g. assets/<name>_walk.gif)
+        Returns absolute file path for user-specific GIF (e.g. assets/<name>_walk.gif)
         Fallback order:
-        1. assets/<slug>_<asset_type>.gif (e.g. assets/abhimanyu_walk.gif)
+        1. assets/<slug>_<asset_type>.gif (e.g. assets/shreya_walk.gif)
         2. assets/<slug>/<asset_type>.gif
         3. Configured default (assets/walk.gif or assets/exit.gif)
         """
@@ -79,8 +102,8 @@ class ConfigManager:
         slug = re.sub(r'[^a-zA-Z0-9_-]', '', user_name.lower().replace(' ', '_'))
         
         if slug and slug != "default":
-            candidate1 = os.path.join("assets", f"{slug}_{asset_type}.gif")
-            candidate2 = os.path.join("assets", slug, f"{asset_type}.gif")
+            candidate1 = resolve_asset_path(os.path.join("assets", f"{slug}_{asset_type}.gif"))
+            candidate2 = resolve_asset_path(os.path.join("assets", slug, f"{asset_type}.gif"))
             if os.path.exists(candidate1):
                 return candidate1
             if os.path.exists(candidate2):
@@ -88,7 +111,8 @@ class ConfigManager:
 
         # Default asset key
         default_key = f"asset_{asset_type}_gif"
-        return self.get(default_key, f"assets/{asset_type}.gif")
+        raw_path = self.get(default_key, f"assets/{asset_type}.gif")
+        return resolve_asset_path(raw_path)
 
     def reset_defaults(self) -> None:
         """Resets configuration to default values."""

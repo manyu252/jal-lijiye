@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Script to build standalone macOS executable app bundle for Jal Lijiye
+# Script to build lightweight standalone macOS executable app bundle for Jal Lijiye
 
 set -e
 
@@ -10,7 +10,16 @@ export PYINSTALLER_CONFIG_DIR="$(pwd)/build/pyinstaller_config"
   --name "Jal Lijiye" \
   --icon "assets/icon.png" \
   --add-data "assets:assets" \
-  --add-data "character_data:character_data" \
+  --exclude-module "PyQt6.QtQml" \
+  --exclude-module "PyQt6.QtQuick" \
+  --exclude-module "PyQt6.QtNetwork" \
+  --exclude-module "PyQt6.QtPdf" \
+  --exclude-module "PyQt6.QtSvg" \
+  --exclude-module "PyQt6.QtDBus" \
+  --exclude-module "PyQt6.QtTest" \
+  --exclude-module "cv2" \
+  --exclude-module "numpy" \
+  --exclude-module "scipy" \
   main.py
 
 echo "Build complete! Your app is ready at: dist/Jal Lijiye.app"

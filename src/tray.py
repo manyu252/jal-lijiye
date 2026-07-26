@@ -4,6 +4,7 @@ from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 
+from src.config import resolve_asset_path
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
@@ -15,8 +16,8 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.config = config_manager
         self.db = db_manager
         
-        # Load tray icon
-        icon_path = self.config.get("asset_icon", "assets/icon.png")
+        # Load tray icon via resolve_asset_path
+        icon_path = resolve_asset_path(self.config.get("asset_icon", "assets/icon.png"))
         if os.path.exists(icon_path):
             self.setIcon(QIcon(icon_path))
         else:

@@ -111,7 +111,7 @@ class CharacterOverlayWindow(QWidget):
 
         # 2. Transparent Character GIF (Bottom)
         self.char_label = QLabel(self)
-        self.char_label.setFixedSize(140, 140)
+        self.char_label.setFixedSize(210, 210)
         self.char_label.setScaledContents(True)
         self.char_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.char_label.setStyleSheet("background: transparent; border: none;")
@@ -142,8 +142,8 @@ class CharacterOverlayWindow(QWidget):
             
         geo = screen.availableGeometry()
         
-        width = 240
-        height = 230
+        width = 330
+        height = 310
         self.resize(width, height)
         
         # Start completely off-screen at the far left edge

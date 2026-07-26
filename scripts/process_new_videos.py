@@ -55,14 +55,14 @@ def convert_video_to_transparent_gif(video_path, output_gif_path, max_duration_s
         else:
             cropped = pil_img
 
-        # Resize height to 125px
-        scale = 125.0 / cropped.height
+        # Resize height to 190px (+50% scale up)
+        scale = 190.0 / cropped.height
         new_w = max(1, int(cropped.width * scale))
-        resized = cropped.resize((new_w, 125), Image.Resampling.LANCZOS)
+        resized = cropped.resize((new_w, 190), Image.Resampling.LANCZOS)
 
-        # Place on 150x150 transparent canvas
-        canvas = Image.new("RGBA", (150, 150), (0, 0, 0, 0))
-        canvas.paste(resized, ((150 - new_w) // 2, 150 - 125), resized)
+        # Place on 225x225 transparent canvas
+        canvas = Image.new("RGBA", (225, 225), (0, 0, 0, 0))
+        canvas.paste(resized, ((225 - new_w) // 2, 225 - 190), resized)
 
         frames.append(canvas)
 

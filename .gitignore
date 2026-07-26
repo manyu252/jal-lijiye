@@ -1,0 +1,29 @@
+# Python Virtual Environment
+venv/
+ENV/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# PyInstaller / Build outputs
+build/
+dist/
+*.spec.bak
+
+# Local SQLite Database
+*.db
+
+# User raw input media (large video files)
+*.mp4
+*.mov
+*.webm

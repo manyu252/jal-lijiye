@@ -59,37 +59,35 @@ class WaterBuddyTray(QSystemTrayIcon):
             }
         """)
 
-        # 1. Profile Switcher Action
-        current_user = self.config.get_current_user()
-        self.act_profile = QAction(f"👤 Switch User ({current_user})", self)
-        self.act_profile.triggered.connect(self.show_profile_dialog)
-        menu.addAction(self.act_profile)
-
-        menu.addSeparator()
-
-        # 2. Trigger Test Reminder
+        # 1. Trigger Test Reminder
         act_test = QAction("💧 Trigger Test Reminder", self)
         act_test.triggered.connect(self.trigger_reminder)
         menu.addAction(act_test)
 
         menu.addSeparator()
 
-        # 3. Hydration Stats
+        # 2. Hydration Stats
         act_stats = QAction("📊 Hydration Stats...", self)
         act_stats.triggered.connect(self.show_stats_dialog)
         menu.addAction(act_stats)
 
-        # 4. Focus Mode Toggle
+        # 3. Focus Mode Toggle
         self.act_focus = QAction("⏸️ Pause Reminders (Focus Mode)", self)
         self.act_focus.setCheckable(True)
         self.act_focus.setChecked(self.config.get("focus_mode", False))
         self.act_focus.toggled.connect(self._on_focus_toggled)
         menu.addAction(self.act_focus)
 
-        # 5. Settings
+        # 4. Settings
         act_settings = QAction("⚙️ Settings...", self)
         act_settings.triggered.connect(self.show_settings_dialog)
         menu.addAction(act_settings)
+
+        # 5. Profile / Switch User (placed below Settings)
+        current_user = self.config.get_current_user()
+        self.act_profile = QAction(f"👤 Switch User ({current_user})", self)
+        self.act_profile.triggered.connect(self.show_profile_dialog)
+        menu.addAction(self.act_profile)
 
         menu.addSeparator()
 

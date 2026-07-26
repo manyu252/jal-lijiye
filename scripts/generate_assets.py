@@ -5,23 +5,25 @@ def ensure_assets_dir():
     os.makedirs("assets", exist_ok=True)
 
 def create_water_icon():
-    # 64x64 pixel art water glass icon
+    # 64x64 pixel art half-filled glass of water icon
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    # Glass outline
-    glass_color = (255, 255, 255, 230)
+    glass_outline = (235, 245, 251, 240)
     water_color = (52, 152, 219, 255)
-    highlight_color = (174, 214, 241, 255)
+    water_surface = (174, 214, 241, 255)
     
-    # Glass trapezoid
-    draw.polygon([(16, 12), (48, 12), (42, 56), (22, 56)], fill=water_color, outline=glass_color, width=3)
-    # Highlights & water surface
-    draw.ellipse([16, 8, 48, 16], outline=glass_color, width=2, fill=(200, 230, 255, 180))
-    draw.line([(24, 20), (24, 48)], fill=highlight_color, width=2)
+    water_polygon = [(17, 33), (47, 33), (43, 55), (21, 55)]
+    draw.polygon(water_polygon, fill=water_color)
+    draw.ellipse([17, 30, 47, 36], fill=water_surface)
+    
+    glass_outline_poly = [(14, 10), (50, 10), (44, 56), (20, 56)]
+    draw.polygon(glass_outline_poly, fill=None, outline=glass_outline, width=3)
+    draw.ellipse([14, 7, 50, 13], outline=glass_outline, width=2, fill=(255, 255, 255, 40))
+    draw.line([(18, 14), (22, 48)], fill=(255, 255, 255, 160), width=2)
     
     img.save("assets/icon.png")
-    print("Created assets/icon.png")
+    print("Created assets/icon.png (half-filled glass)")
 
 def create_pixel_character_frame(frame_type, frame_idx):
     # 96x96 transparent canvas for high-DPI scaling

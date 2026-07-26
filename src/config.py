@@ -1,14 +1,14 @@
 import os
 import json
+import re
 from typing import Any, Dict
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,
     "focus_mode": False,
+    "current_user": "Default",
     "asset_walk_gif": "assets/walk.gif",
-    "asset_ask_gif": "assets/ask.gif",
-    "asset_happy_gif": "assets/happy.gif",
     "asset_exit_gif": "assets/exit.gif",
     "asset_icon": "assets/icon.png",
 }
@@ -57,6 +57,38 @@ class ConfigManager:
         """Sets a configuration value and saves to disk."""
         self._config[key] = value
         self.save()
+
+    def get_current_user(self) -> str:
+        """Returns the active user profile name."""
+        return self.get("current_user", "Default")
+
+    def set_current_user(self, name: str) -> None:
+        """Sets active user profile name."""
+        clean_name = name.strip() if name and name.strip() else "Default"
+        self.set("current_user", clean_name)
+
+    def get_user_gif(self, asset_type: str) -> str:
+        """
+        Returns file path for user-specific GIF (e.g. assets/<name>_walk.gif)
+        Fallback order:
+        1. assets/<slug>_<asset_type>.gif (e.g. assets/abhimanyu_walk.gif)
+        2. assets/<slug>/<asset_type>.gif
+        3. Configured default (assets/walk.gif or assets/exit.gif)
+        """
+        user_name = self.get_current_user()
+        slug = re.sub(r'[^a-zA-Z0-9_-]', '', user_name.lower().replace(' ', '_'))
+        
+        if slug and slug != "default":
+            candidate1 = os.path.join("assets", f"{slug}_{asset_type}.gif")
+            candidate2 = os.path.join("assets", slug, f"{asset_type}.gif")
+            if os.path.exists(candidate1):
+                return candidate1
+            if os.path.exists(candidate2):
+                return candidate2
+
+        # Default asset key
+        default_key = f"asset_{asset_type}_gif"
+        return self.get(default_key, f"assets/{asset_type}.gif")
 
     def reset_defaults(self) -> None:
         """Resets configuration to default values."""

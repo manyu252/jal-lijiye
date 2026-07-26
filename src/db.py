@@ -86,17 +86,25 @@ class DatabaseManager:
         
         with self._get_connection() as conn:
             cursor = conn.cursor()
+            # Check if row exists for this user_date_key or legacy date_str
             cursor.execute(
-                """
-                INSERT INTO session_logs (user_date_key, user_name, date_str, active_seconds)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(user_date_key) DO UPDATE SET active_seconds = active_seconds + ?
-                """,
-                (user_date_key, user, date_str, seconds, seconds)
+                "SELECT active_seconds FROM session_logs WHERE user_date_key = ? OR (date_str = ? AND (user_name = ? OR user_name = 'Default' OR user_name IS NULL))",
+                (user_date_key, date_str, user)
             )
+            row = cursor.fetchone()
+            if row:
+                cursor.execute(
+                    "UPDATE session_logs SET active_seconds = active_seconds + ?, user_date_key = ?, user_name = ? WHERE user_date_key = ? OR (date_str = ? AND (user_name = ? OR user_name = 'Default' OR user_name IS NULL))",
+                    (seconds, user_date_key, user, user_date_key, date_str, user)
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO session_logs (user_date_key, user_name, date_str, active_seconds) VALUES (?, ?, ?, ?)",
+                    (user_date_key, user, date_str, seconds)
+                )
             conn.commit()
             
-            cursor.execute("SELECT active_seconds FROM session_logs WHERE user_date_key = ?", (user_date_key,))
+            cursor.execute("SELECT active_seconds FROM session_logs WHERE user_date_key = ? OR date_str = ?", (user_date_key, date_str))
             row = cursor.fetchone()
             return row["active_seconds"] if row else 0
 

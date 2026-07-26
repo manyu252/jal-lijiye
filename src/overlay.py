@@ -3,8 +3,8 @@ from typing import Optional
 from PyQt6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve, QTimer, pyqtSignal
 from PyQt6.QtGui import QMovie, QGuiApplication, QFont
 from PyQt6.QtWidgets import (
-    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
-)
+    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame)
+from src.config import resolve_asset_path
 
 class ComicSpeechBubble(QFrame):
     """Custom speech bubble widget with comic style border and pointing tail."""
@@ -122,72 +122,76 @@ class CharacterOverlayWindow(QWidget):
         self.movie: Optional[QMovie] = None
 
     def _play_gif(self, asset_key: str) -> None:
-        asset_type = "exit" if "exit" in asset_key else "walk"
-        gif_path = self.config.get_user_gif(asset_type)
-        
-        if not os.path.exists(gif_path):
-            # Fallback to config or default assets
-            gif_path = self.config.get(asset_key, f"assets/{asset_type}.gif")
+        try:
+            asset_type = "exit" if "exit" in asset_key else "walk"
+            gif_path = resolve_asset_path(self.config.get_user_gif(asset_type))
             
-        if not os.path.exists(gif_path):
-            print(f"[Overlay] Asset missing: {gif_path}")
-            return
-            
-        if self.movie:
-            self.movie.stop()
-            
-        self.movie = QMovie(gif_path)
-        self.char_label.setMovie(self.movie)
-        self.movie.start()
+            if not os.path.exists(gif_path):
+                raw_default = self.config.get(asset_key, f"assets/{asset_type}.gif")
+                gif_path = resolve_asset_path(raw_default)
+                
+            if not os.path.exists(gif_path):
+                print(f"[Overlay] Asset missing: {gif_path}")
+                return
+                
+            if self.movie:
+                self.movie.stop()
+                
+            self.movie = QMovie(gif_path)
+            self.char_label.setMovie(self.movie)
+            self.movie.start()
+        except Exception as e:
+            print(f"[Overlay] Error playing GIF: {e}")
 
     def show_reminder(self) -> None:
         """Starts the walk-in animation from the far left screen edge."""
-        screen = QGuiApplication.primaryScreen()
-        if not screen:
-            return
+        try:
+            screen = QGuiApplication.primaryScreen()
+            if not screen:
+                return
+                
+            geo = screen.availableGeometry()
             
-        geo = screen.availableGeometry()
-        
-        width = 330
-        height = 310
-        self.resize(width, height)
-        
-        # Start at left screen boundary
-        start_x = geo.x()
-        target_x = geo.x() + 30  # Resting position near left edge
-        y_pos = geo.y() + geo.height() - height - 10  # Bottom of screen
-        
-        self.move(start_x, y_pos)
-        self.bubble.hide()  # Speech bubble hidden during walk-in
-        
-        self._play_gif("walk")
-        self.show()
-        self.raise_()
-        self.activateWindow()
+            width = 330
+            height = 310
+            self.resize(width, height)
+            
+            start_x = geo.x()
+            target_x = geo.x() + 30
+            y_pos = geo.y() + geo.height() - height - 10
+            
+            self.move(start_x, y_pos)
+            self.bubble.hide()
+            
+            self._play_gif("walk")
+            self.show()
+            self.raise_()
+            self.activateWindow()
 
-        # Slide in from left screen edge to target_x
-        self.pos_anim = QPropertyAnimation(self, b"pos")
-        self.pos_anim.setDuration(3000)  # 3 seconds walk-in
-        self.pos_anim.setStartValue(QPoint(start_x, y_pos))
-        self.pos_anim.setEndValue(QPoint(target_x, y_pos))
-        self.pos_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
-        self.pos_anim.finished.connect(self._on_walk_in_finished)
-        self.pos_anim.start()
+            self.pos_anim = QPropertyAnimation(self, b"pos")
+            self.pos_anim.setDuration(3000)
+            self.pos_anim.setStartValue(QPoint(start_x, y_pos))
+            self.pos_anim.setEndValue(QPoint(target_x, y_pos))
+            self.pos_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+            self.pos_anim.finished.connect(self._on_walk_in_finished)
+            self.pos_anim.start()
+        except Exception as e:
+            print(f"[Overlay] Error showing reminder: {e}")
 
     def _on_walk_in_finished(self) -> None:
-        # Pause/freeze movie on last frame of walk-in video
-        if self.movie:
-            self.movie.setPaused(True)
-            
-        # Update personalized title
-        user_name = self.config.get_current_user()
-        if user_name and user_name.lower() != "default":
-            self.lbl_title.setText(f"Jal lijiye, {user_name}! 💧")
-        else:
-            self.lbl_title.setText("Jal lijiye! 💧")
+        try:
+            if self.movie:
+                self.movie.setPaused(True)
+                
+            user_name = self.config.get_current_user()
+            if user_name and user_name.lower() != "default":
+                self.lbl_title.setText(f"Jal lijiye, {user_name}! 💧")
+            else:
+                self.lbl_title.setText("Jal lijiye! 💧")
 
-        # Pop up comic speech bubble above character
-        self.bubble.show()
+            self.bubble.show()
+        except Exception as e:
+            print(f"[Overlay] Error in walk-in finished: {e}")
 
     def _on_drink_clicked(self) -> None:
         self.bubble.hide()

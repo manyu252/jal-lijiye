@@ -4,6 +4,7 @@ from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 
+from src.config import resolve_asset_path
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
@@ -15,8 +16,8 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.config = config_manager
         self.db = db_manager
         
-        # Load tray icon
-        icon_path = self.config.get("asset_icon", "assets/icon.png")
+        # Load tray icon via resolve_asset_path
+        icon_path = resolve_asset_path(self.config.get("asset_icon", "assets/icon.png"))
         if os.path.exists(icon_path):
             self.setIcon(QIcon(icon_path))
         else:
@@ -108,27 +109,42 @@ class WaterBuddyTray(QSystemTrayIcon):
 
     def trigger_reminder(self) -> None:
         """Manually triggers character walk-in overlay."""
-        self.overlay.show_reminder()
+        try:
+            self.overlay.show_reminder()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error in trigger_reminder: {e}")
 
     def _on_drink_confirmed(self) -> None:
         """Callback when user confirms drinking water."""
-        user_name = self.config.get_current_user()
-        self.db.log_drink(user_name=user_name)
-        self._update_reminder_timer()
+        try:
+            user_name = self.config.get_current_user()
+            self.db.log_drink(user_name=user_name)
+            self._update_reminder_timer()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error logging drink: {e}")
 
     def _on_snooze_requested(self) -> None:
         """Callback when user clicks 'Snooze'."""
-        snooze_ms = self.config.get("snooze_duration_minutes", 10) * 60 * 1000
-        self.reminder_timer.start(snooze_ms)
+        try:
+            snooze_ms = self.config.get("snooze_duration_minutes", 10) * 60 * 1000
+            self.reminder_timer.start(snooze_ms)
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error in snooze: {e}")
 
     def _on_focus_toggled(self, checked: bool) -> None:
-        self.config.set("focus_mode", checked)
-        self._update_reminder_timer()
+        try:
+            self.config.set("focus_mode", checked)
+            self._update_reminder_timer()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error in focus toggled: {e}")
 
     def _on_session_tick(self) -> None:
         """Increments active laptop session time by 60 seconds in SQLite for active user."""
-        user_name = self.config.get_current_user()
-        self.db.add_session_time(60, user_name=user_name)
+        try:
+            user_name = self.config.get_current_user()
+            self.db.add_session_time(60, user_name=user_name)
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error in session tick: {e}")
 
     def show_profile_dialog(self) -> None:
         dialog = ProfileDialog(self.config)

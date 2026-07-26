@@ -153,33 +153,26 @@ class DatabaseManager:
             if user_name:
                 cursor.execute("""
                     SELECT 
-                        COALESCE(s.date_str, w.date_str) as date_str,
-                        COALESCE(w.drink_count, 0) as drinks,
+                        w.date_str as date_str,
+                        COUNT(w.id) as drinks,
                         COALESCE(s.active_seconds, 0) as active_seconds
-                    FROM session_logs s
-                    FULL OUTER JOIN (
-                        SELECT date_str, COUNT(*) as drink_count 
-                        FROM water_logs 
-                        WHERE user_name = ?
-                        GROUP BY date_str
-                    ) w ON s.date_str = w.date_str
-                    WHERE s.user_name = ? OR w.date_str IS NOT NULL
-                    ORDER BY date_str DESC
+                    FROM water_logs w
+                    LEFT JOIN session_logs s ON (s.user_date_key = w.user_name || '_' || w.date_str OR s.date_str = w.date_str)
+                    WHERE w.user_name = ?
+                    GROUP BY w.date_str
+                    ORDER BY w.date_str DESC
                     LIMIT ?
-                """, (user_name, user_name, limit_days))
+                """, (user_name, limit_days))
             else:
                 cursor.execute("""
                     SELECT 
-                        COALESCE(s.date_str, w.date_str) as date_str,
-                        COALESCE(w.drink_count, 0) as drinks,
-                        COALESCE(s.active_seconds, 0) as active_seconds
-                    FROM session_logs s
-                    FULL OUTER JOIN (
-                        SELECT date_str, COUNT(*) as drink_count 
-                        FROM water_logs 
-                        GROUP BY date_str
-                    ) w ON s.date_str = w.date_str
-                    ORDER BY date_str DESC
+                        w.date_str as date_str,
+                        COUNT(w.id) as drinks,
+                        COALESCE(SUM(s.active_seconds), 0) as active_seconds
+                    FROM water_logs w
+                    LEFT JOIN session_logs s ON s.date_str = w.date_str
+                    GROUP BY w.date_str
+                    ORDER BY w.date_str DESC
                     LIMIT ?
                 """, (limit_days,))
             

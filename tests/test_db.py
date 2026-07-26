@@ -42,3 +42,16 @@ def test_db_summary_history():
         latest = summary[0]
         assert latest["drinks"] == 1
         assert latest["active_hours"] == 0.5
+
+def test_db_recent_logs():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = os.path.join(tmpdir, "test.db")
+        db = DatabaseManager(db_path)
+        
+        id1 = db.log_drink(volume_ml=250)
+        id2 = db.log_drink(volume_ml=300)
+        
+        logs = db.get_recent_logs(10)
+        assert len(logs) == 2
+        assert logs[0]["volume_ml"] == 300
+        assert logs[1]["volume_ml"] == 250

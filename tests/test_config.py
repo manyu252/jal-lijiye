@@ -30,3 +30,12 @@ def test_config_reset_defaults():
         cfg.set("reminder_interval_minutes", 90)
         cfg.reset_defaults()
         assert cfg.get("reminder_interval_minutes") == 30
+
+def test_config_corrupt_file_fallback():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config_path = os.path.join(tmpdir, "config.json")
+        with open(config_path, "w") as f:
+            f.write("{ INVALID JSON CONTENT }")
+            
+        cfg = ConfigManager(config_path)
+        assert cfg.get("reminder_interval_minutes") == 30

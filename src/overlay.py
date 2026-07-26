@@ -152,8 +152,8 @@ class CharacterOverlayWindow(QWidget):
         height = 310
         self.resize(width, height)
         
-        # Start completely off-screen at the far left edge
-        start_x = geo.x() - width
+        # Start at left screen boundary
+        start_x = geo.x()
         target_x = geo.x() + 30  # Resting position near left edge
         y_pos = geo.y() + geo.height() - height - 10  # Bottom of screen
         
@@ -165,7 +165,7 @@ class CharacterOverlayWindow(QWidget):
         self.raise_()
         self.activateWindow()
 
-        # Slide in from left off-screen edge to target_x
+        # Slide in from left screen edge to target_x
         self.pos_anim = QPropertyAnimation(self, b"pos")
         self.pos_anim.setDuration(3000)  # 3 seconds walk-in
         self.pos_anim.setStartValue(QPoint(start_x, y_pos))

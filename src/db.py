@@ -41,6 +41,21 @@ class DatabaseManager:
                     active_seconds INTEGER DEFAULT 0
                 )
             """)
+            
+            # Automatic schema migration for pre-existing SQLite databases
+            cursor.execute("PRAGMA table_info(water_logs)")
+            water_cols = [row["name"] for row in cursor.fetchall()]
+            if "user_name" not in water_cols:
+                cursor.execute("ALTER TABLE water_logs ADD COLUMN user_name TEXT DEFAULT 'Default'")
+                
+            cursor.execute("PRAGMA table_info(session_logs)")
+            sess_cols = [row["name"] for row in cursor.fetchall()]
+            if "user_name" not in sess_cols:
+                cursor.execute("ALTER TABLE session_logs ADD COLUMN user_name TEXT DEFAULT 'Default'")
+            if "user_date_key" not in sess_cols:
+                cursor.execute("ALTER TABLE session_logs ADD COLUMN user_date_key TEXT")
+                cursor.execute("UPDATE session_logs SET user_date_key = 'Default_' || date_str WHERE user_date_key IS NULL")
+
             conn.commit()
 
     def log_drink(self, user_name: str = "Default", timestamp: Optional[datetime] = None, volume_ml: int = 250) -> int:

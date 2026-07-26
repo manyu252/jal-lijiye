@@ -132,6 +132,10 @@ class WaterBuddyTray(QSystemTrayIcon):
 
     def show_profile_dialog(self) -> None:
         dialog = ProfileDialog(self.config)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        QApplication.setActiveWindow(dialog)
         if dialog.exec() == ProfileDialog.DialogCode.Accepted:
             current_user = self.config.get_current_user()
             self.act_profile.setText(f"Switch User ({current_user})")
@@ -139,10 +143,18 @@ class WaterBuddyTray(QSystemTrayIcon):
     def show_stats_dialog(self) -> None:
         user_name = self.config.get_current_user()
         dialog = StatsDialog(self.db, user_name=user_name)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        QApplication.setActiveWindow(dialog)
         dialog.exec()
 
     def show_settings_dialog(self) -> None:
         dialog = SettingsDialog(self.config)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        QApplication.setActiveWindow(dialog)
         if dialog.exec() == SettingsDialog.DialogCode.Accepted:
             self._update_reminder_timer()
             current_user = self.config.get_current_user()

@@ -1,18 +1,20 @@
 import os
-import glob
-import re
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QFrame
+    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton
 )
 
 class ProfileDialog(QDialog):
     def __init__(self, config_manager, parent=None):
         super().__init__(parent)
         self.config = config_manager
-        self.setWindowTitle("User Login & Profile - Jal Lijiye")
-        self.setFixedSize(440, 320)
+        self.setWindowTitle("Switch User")
+        self.setFixedSize(360, 180)
+        
+        # Ensure dialog brings itself to top and gets focus when opened from menu bar
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+
         self.setStyleSheet("""
             QDialog {
                 background-color: #1a242b;
@@ -21,12 +23,9 @@ class ProfileDialog(QDialog):
             }
             QLabel {
                 color: #ffffff;
+                font-size: 14px;
             }
-            QLabel#lbl_info {
-                color: #aed6f1;
-                font-size: 12px;
-            }
-            QComboBox, QLineEdit {
+            QComboBox {
                 background-color: #24333e;
                 color: #ffffff;
                 border: 1px solid #2c3e50;
@@ -34,13 +33,18 @@ class ProfileDialog(QDialog):
                 padding: 8px;
                 font-size: 14px;
             }
+            QComboBox QAbstractItemView {
+                background-color: #1a242b;
+                color: #ffffff;
+                selection-background-color: #3498db;
+            }
             QPushButton#btn_login {
                 background-color: #27ae60;
                 color: #ffffff;
                 font-weight: bold;
                 font-size: 14px;
                 border-radius: 8px;
-                padding: 10px 18px;
+                padding: 8px 16px;
                 border: none;
             }
             QPushButton#btn_login:hover {
@@ -52,7 +56,7 @@ class ProfileDialog(QDialog):
                 font-weight: bold;
                 font-size: 14px;
                 border-radius: 8px;
-                padding: 10px 18px;
+                padding: 8px 16px;
                 border: none;
             }
             QPushButton#btn_cancel:hover {
@@ -63,43 +67,33 @@ class ProfileDialog(QDialog):
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(16)
+        layout.setSpacing(14)
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Header
-        header = QLabel("Who is drinking water today? 👤", self)
+        header = QLabel("Select User", self)
         h_font = QFont()
         h_font.setPointSize(16)
         h_font.setBold(True)
         header.setFont(h_font)
         layout.addWidget(header)
 
-        # Subtitle / Info
-        lbl_info = QLabel(
-            "Enter your name to switch profiles. Your companion GIFs will load from:\n"
-            "• assets/<name>_walk.gif\n"
-            "• assets/<name>_exit.gif",
-            self
-        )
-        lbl_info.setObjectName("lbl_info")
-        layout.addWidget(lbl_info)
-
-        # Combo box / Input line edit
-        layout.addWidget(QLabel("Profile Name / Login:", self))
-        
+        # Dropdown options: Abhimanyu, Shreya, Default
         self.combo_profile = QComboBox(self)
-        self.combo_profile.setEditable(True)
         
-        # Populate detected profiles from assets/
-        existing_profiles = self._detect_profiles()
+        profiles = ["Abhimanyu", "Shreya", "Default"]
         current = self.config.get_current_user()
-        if current not in existing_profiles:
-            existing_profiles.insert(0, current)
+        if current and current not in profiles:
+            profiles.insert(0, current)
             
-        for prof in existing_profiles:
+        for prof in profiles:
             self.combo_profile.addItem(prof)
             
-        self.combo_profile.setCurrentText(current)
+        if current in profiles:
+            self.combo_profile.setCurrentText(current)
+        else:
+            self.combo_profile.setCurrentIndex(0)
+            
         layout.addWidget(self.combo_profile)
 
         layout.addStretch()
@@ -112,7 +106,7 @@ class ProfileDialog(QDialog):
         btn_cancel.setObjectName("btn_cancel")
         btn_cancel.clicked.connect(self.reject)
 
-        btn_login = QPushButton("Switch Profile", self)
+        btn_login = QPushButton("Switch", self)
         btn_login.setObjectName("btn_login")
         btn_login.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_login.clicked.connect(self._on_switch_profile)
@@ -121,17 +115,10 @@ class ProfileDialog(QDialog):
         btn_layout.addWidget(btn_login)
         layout.addLayout(btn_layout)
 
-    def _detect_profiles(self) -> list:
-        """Scans assets/ for <name>_walk.gif patterns."""
-        profiles = ["Abhimanyu", "Friend", "Default"]
-        if os.path.exists("assets"):
-            for filepath in glob.glob("assets/*_walk.gif"):
-                basename = os.path.basename(filepath)
-                slug = basename[:-9]  # remove _walk.gif
-                name = slug.replace('_', ' ').title()
-                if name not in profiles:
-                    profiles.append(name)
-        return profiles
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.raise_()
+        self.activateWindow()
 
     def _on_switch_profile(self):
         name = self.combo_profile.currentText().strip()

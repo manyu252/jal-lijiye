@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
+from src.profile_dialog import ProfileDialog
 
 class WaterBuddyTray(QSystemTrayIcon):
     def __init__(self, config_manager, db_manager, parent: Optional[QObject] = None) -> None:
@@ -58,33 +59,41 @@ class WaterBuddyTray(QSystemTrayIcon):
             }
         """)
 
-        # 1. Trigger Test Reminder
+        # 1. Profile Switcher Action
+        current_user = self.config.get_current_user()
+        self.act_profile = QAction(f"👤 Switch User ({current_user})", self)
+        self.act_profile.triggered.connect(self.show_profile_dialog)
+        menu.addAction(self.act_profile)
+
+        menu.addSeparator()
+
+        # 2. Trigger Test Reminder
         act_test = QAction("💧 Trigger Test Reminder", self)
         act_test.triggered.connect(self.trigger_reminder)
         menu.addAction(act_test)
 
         menu.addSeparator()
 
-        # 2. Hydration Stats
+        # 3. Hydration Stats
         act_stats = QAction("📊 Hydration Stats...", self)
         act_stats.triggered.connect(self.show_stats_dialog)
         menu.addAction(act_stats)
 
-        # 3. Focus Mode Toggle
+        # 4. Focus Mode Toggle
         self.act_focus = QAction("⏸️ Pause Reminders (Focus Mode)", self)
         self.act_focus.setCheckable(True)
         self.act_focus.setChecked(self.config.get("focus_mode", False))
         self.act_focus.toggled.connect(self._on_focus_toggled)
         menu.addAction(self.act_focus)
 
-        # 4. Settings
+        # 5. Settings
         act_settings = QAction("⚙️ Settings...", self)
         act_settings.triggered.connect(self.show_settings_dialog)
         menu.addAction(act_settings)
 
         menu.addSeparator()
 
-        # 5. Quit
+        # 6. Quit
         act_quit = QAction("🚪 Quit Jal Lijiye", self)
         act_quit.triggered.connect(QApplication.instance().quit)
         menu.addAction(act_quit)
@@ -102,7 +111,6 @@ class WaterBuddyTray(QSystemTrayIcon):
     def trigger_reminder(self) -> None:
         """Triggers the character overlay window."""
         if self.config.get("focus_mode", False) and self.sender() != None and isinstance(self.sender(), QAction) and self.sender().text().startswith("💧"):
-            # Allow manual test trigger even in focus mode
             pass
         elif self.config.get("focus_mode", False):
             return
@@ -110,12 +118,13 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.overlay.show_reminder()
 
     def _on_drink_confirmed(self) -> None:
-        """Callback when user clicks 'Drank Water'."""
-        self.db.log_drink()
+        """Callback when user clicks 'Drink'."""
+        user_name = self.config.get_current_user()
+        self.db.log_drink(user_name=user_name)
         self._update_reminder_timer()
 
     def _on_snooze_requested(self) -> None:
-        """Callback when user clicks 'Snooze' (reschedule for snooze_duration_minutes)."""
+        """Callback when user clicks 'Snooze'."""
         snooze_ms = self.config.get("snooze_duration_minutes", 10) * 60 * 1000
         self.reminder_timer.start(snooze_ms)
 
@@ -124,14 +133,24 @@ class WaterBuddyTray(QSystemTrayIcon):
         self._update_reminder_timer()
 
     def _on_session_tick(self) -> None:
-        """Increments active laptop session time by 60 seconds in SQLite."""
-        self.db.add_session_time(60)
+        """Increments active laptop session time by 60 seconds in SQLite for active user."""
+        user_name = self.config.get_current_user()
+        self.db.add_session_time(60, user_name=user_name)
+
+    def show_profile_dialog(self) -> None:
+        dialog = ProfileDialog(self.config)
+        if dialog.exec() == ProfileDialog.DialogCode.Accepted:
+            current_user = self.config.get_current_user()
+            self.act_profile.setText(f"👤 Switch User ({current_user})")
 
     def show_stats_dialog(self) -> None:
-        dialog = StatsDialog(self.db)
+        user_name = self.config.get_current_user()
+        dialog = StatsDialog(self.db, user_name=user_name)
         dialog.exec()
 
     def show_settings_dialog(self) -> None:
         dialog = SettingsDialog(self.config)
         if dialog.exec() == SettingsDialog.DialogCode.Accepted:
             self._update_reminder_timer()
+            current_user = self.config.get_current_user()
+            self.act_profile.setText(f"👤 Switch User ({current_user})")

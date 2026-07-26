@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
@@ -7,10 +8,13 @@ from PyQt6.QtWidgets import (
 )
 
 class StatsDialog(QDialog):
-    def __init__(self, db_manager, parent=None):
+    def __init__(self, db_manager, user_name: Optional[str] = None, parent=None):
         super().__init__(parent)
         self.db = db_manager
-        self.setWindowTitle("Hydration Statistics - Jal Lijiye")
+        self.user_name = user_name
+        
+        title_user = f" ({user_name})" if user_name else ""
+        self.setWindowTitle(f"Hydration Statistics{title_user} - Jal Lijiye")
         self.setFixedSize(520, 440)
         self.setStyleSheet("""
             QDialog {
@@ -68,7 +72,8 @@ class StatsDialog(QDialog):
         layout.setContentsMargins(16, 16, 16, 16)
 
         # Header
-        header = QLabel("Hydration Tracker Dashboard 📊", self)
+        user_header = f" for {self.user_name}" if self.user_name else ""
+        header = QLabel(f"Hydration Dashboard{user_header} 📊", self)
         h_font = QFont()
         h_font.setPointSize(16)
         h_font.setBold(True)
@@ -83,7 +88,7 @@ class StatsDialog(QDialog):
         card1 = QFrame(self)
         card1.setProperty("class", "card")
         c1_layout = QVBoxLayout(card1)
-        val1 = QLabel(f"{self.db.get_today_drink_count()} 💧", card1)
+        val1 = QLabel(f"{self.db.get_today_drink_count(self.user_name)} 💧", card1)
         val1.setProperty("class", "val")
         lbl1 = QLabel("Glasses Drunk Today", card1)
         lbl1.setProperty("class", "lbl")
@@ -95,7 +100,7 @@ class StatsDialog(QDialog):
         card2 = QFrame(self)
         card2.setProperty("class", "card")
         c2_layout = QVBoxLayout(card2)
-        val2 = QLabel(f"{self.db.get_today_active_hours()} hrs", card2)
+        val2 = QLabel(f"{self.db.get_today_active_hours(self.user_name)} hrs", card2)
         val2.setProperty("class", "val")
         lbl2 = QLabel("Active Laptop Time", card2)
         lbl2.setProperty("class", "lbl")
@@ -107,7 +112,7 @@ class StatsDialog(QDialog):
         card3 = QFrame(self)
         card3.setProperty("class", "card")
         c3_layout = QVBoxLayout(card3)
-        val3 = QLabel(f"{self.db.get_today_hydration_ratio()} /hr", card3)
+        val3 = QLabel(f"{self.db.get_today_hydration_ratio(self.user_name)} /hr", card3)
         val3.setProperty("class", "val")
         lbl3 = QLabel("Hydration Ratio", card3)
         lbl3.setProperty("class", "lbl")
@@ -144,7 +149,7 @@ class StatsDialog(QDialog):
         layout.addLayout(btn_layout)
 
     def _populate_table(self):
-        summary = self.db.get_daily_summary(7)
+        summary = self.db.get_daily_summary(7, user_name=self.user_name)
         self.table.setRowCount(len(summary))
         for row_idx, item in enumerate(summary):
             self.table.setItem(row_idx, 0, QTableWidgetItem(str(item["date"])))

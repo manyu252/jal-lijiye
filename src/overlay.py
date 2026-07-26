@@ -122,7 +122,13 @@ class CharacterOverlayWindow(QWidget):
         self.movie: Optional[QMovie] = None
 
     def _play_gif(self, asset_key: str) -> None:
-        gif_path = self.config.get(asset_key, f"assets/{asset_key.replace('asset_', '').replace('_gif', '.gif')}")
+        asset_type = "exit" if "exit" in asset_key else "walk"
+        gif_path = self.config.get_user_gif(asset_type)
+        
+        if not os.path.exists(gif_path):
+            # Fallback to config or default assets
+            gif_path = self.config.get(asset_key, f"assets/{asset_type}.gif")
+            
         if not os.path.exists(gif_path):
             print(f"[Overlay] Asset missing: {gif_path}")
             return
@@ -154,7 +160,7 @@ class CharacterOverlayWindow(QWidget):
         self.move(start_x, y_pos)
         self.bubble.hide()  # Speech bubble hidden during walk-in
         
-        self._play_gif("asset_walk_gif")
+        self._play_gif("walk")
         self.show()
         self.raise_()
         self.activateWindow()
@@ -172,6 +178,14 @@ class CharacterOverlayWindow(QWidget):
         # Pause/freeze movie on last frame of walk-in video
         if self.movie:
             self.movie.setPaused(True)
+            
+        # Update personalized title
+        user_name = self.config.get_current_user()
+        if user_name and user_name.lower() != "default":
+            self.lbl_title.setText(f"Jal lijiye, {user_name}! 💧")
+        else:
+            self.lbl_title.setText("Jal lijiye! 💧")
+
         # Pop up comic speech bubble above character
         self.bubble.show()
 

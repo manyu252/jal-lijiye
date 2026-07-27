@@ -26,7 +26,10 @@ def resolve_asset_path(relative_path: str) -> str:
     # Fallback to current working directory
     return os.path.abspath(relative_path)
 
+from src.__version__ import __version__
+
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "version": __version__,
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,
     "focus_mode": False,

@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
 )
+from src.fonts import font_poppins, font_newsreader, font_work_sans
 
 class StatsDialog(QDialog):
     def __init__(self, db_manager, user_name: Optional[str] = None, parent=None):
@@ -16,59 +17,64 @@ class StatsDialog(QDialog):
         title_user = f" ({user_name})" if user_name else ""
         self.setWindowTitle(f"Hydration Statistics{title_user} - Jal Lijiye")
         self.setFixedSize(540, 460)
-        self.setStyleSheet("""
-            QDialog {
+        
+        f_pop = font_poppins()
+        f_news = font_newsreader()
+        f_work = font_work_sans()
+        
+        self.setStyleSheet(f"""
+            QDialog {{
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
-            }
-            QFrame.card {
+                font-family: "{f_work}", sans-serif;
+            }}
+            QFrame.card {{
                 background-color: #ffffff;
                 border-radius: 10px;
                 border: 1.5px solid #414f42;
                 padding: 10px;
-            }
-            QLabel.val {
+            }}
+            QLabel.val {{
                 color: #89301c;
-                font-family: "Poppins", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_pop}", sans-serif;
                 font-size: 22px;
                 font-weight: bold;
-            }
-            QLabel.lbl {
+            }}
+            QLabel.lbl {{
                 color: #414f42;
-                font-family: "Newsreader", Georgia, serif;
+                font-family: "{f_news}", sans-serif;
                 font-size: 12px;
                 font-weight: bold;
-            }
-            QTableWidget {
+            }}
+            QTableWidget {{
                 background-color: #ffffff;
                 color: #261e1b;
                 gridline-color: #eae6dc;
                 border-radius: 8px;
                 border: 1px solid #414f42;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-size: 13px;
-            }
-            QHeaderView::section {
+            }}
+            QHeaderView::section {{
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
                 padding: 6px;
                 border: none;
-            }
-            QPushButton {
+            }}
+            QPushButton {{
                 background-color: #89301c;
                 color: white;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
                 border-radius: 6px;
                 padding: 8px 18px;
                 border: none;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #a23b24;
-            }
+            }}
         """)
         self._init_ui()
 
@@ -80,7 +86,7 @@ class StatsDialog(QDialog):
         # Header (Poppins)
         user_header = f" for {self.user_name}" if self.user_name else ""
         header = QLabel(f"Hydration Dashboard{user_header} 📊", self)
-        h_font = QFont("Poppins", 18, QFont.Weight.Bold)
+        h_font = QFont(font_poppins(), 18, QFont.Weight.Bold)
         header.setFont(h_font)
         header.setStyleSheet("color: #89301c; border: none;")
         layout.addWidget(header)
@@ -129,7 +135,7 @@ class StatsDialog(QDialog):
 
         # History Title (Newsreader 14pt)
         hist_lbl = QLabel("Past 7 Days History", self)
-        hist_font = QFont("Newsreader", 14, QFont.Weight.Bold)
+        hist_font = QFont(font_newsreader(), 14, QFont.Weight.Bold)
         hist_lbl.setFont(hist_font)
         hist_lbl.setStyleSheet("color: #414f42;")
         layout.addWidget(hist_lbl)

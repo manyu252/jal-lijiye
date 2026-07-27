@@ -5,51 +5,54 @@ from PyQt6.QtGui import QMovie, QGuiApplication, QFont
 from PyQt6.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame)
 from src.config import resolve_asset_path
+from src.fonts import font_poppins, font_work_sans
 
 class ComicSpeechBubble(QFrame):
     """Custom speech bubble widget with brand styling and pointing tail."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setStyleSheet("""
-            QFrame {
+        f_pop = font_poppins()
+        f_work = font_work_sans()
+        self.setStyleSheet(f"""
+            QFrame {{
                 background-color: #f6f4ee;
                 border: 2.5px solid #89301c;
                 border-radius: 14px;
-            }
-            QLabel {
+            }}
+            QLabel {{
                 color: #89301c;
-                font-family: "Poppins", "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_pop}", "{f_work}", sans-serif;
                 font-size: 15px;
                 font-weight: bold;
                 border: none;
                 background: transparent;
-            }
-            QPushButton#btn_drink {
+            }}
+            QPushButton#btn_drink {{
                 background-color: #89301c;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
                 padding: 6px 14px;
                 border: none;
-            }
-            QPushButton#btn_drink:hover {
+            }}
+            QPushButton#btn_drink:hover {{
                 background-color: #a23b24;
-            }
-            QPushButton#btn_snooze {
+            }}
+            QPushButton#btn_snooze {{
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
                 padding: 6px 14px;
                 border: none;
-            }
-            QPushButton#btn_snooze:hover {
+            }}
+            QPushButton#btn_snooze:hover {{
                 background-color: #546455;
-            }
+            }}
         """)
 
 class CharacterOverlayWindow(QWidget):

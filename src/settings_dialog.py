@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox,
     QPushButton, QFileDialog, QGroupBox, QFormLayout, QLineEdit
 )
+from src.fonts import font_poppins, font_newsreader, font_work_sans
 
 class SettingsDialog(QDialog):
     def __init__(self, config_manager, parent=None):
@@ -12,15 +13,20 @@ class SettingsDialog(QDialog):
         self.config = config_manager
         self.setWindowTitle("Settings - Jal Lijiye")
         self.setFixedSize(500, 480)
-        self.setStyleSheet("""
-            QDialog {
+        
+        f_pop = font_poppins()
+        f_news = font_newsreader()
+        f_work = font_work_sans()
+        
+        self.setStyleSheet(f"""
+            QDialog {{
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
-            }
-            QGroupBox {
+                font-family: "{f_work}", sans-serif;
+            }}
+            QGroupBox {{
                 color: #414f42;
-                font-family: "Newsreader", Georgia, serif;
+                font-family: "{f_news}", sans-serif;
                 font-size: 16px;
                 font-weight: bold;
                 border: 1.5px solid #414f42;
@@ -28,66 +34,66 @@ class SettingsDialog(QDialog):
                 margin-top: 14px;
                 padding-top: 14px;
                 background-color: #ffffff;
-            }
-            QGroupBox::title {
+            }}
+            QGroupBox::title {{
                 subcontrol-origin: margin;
                 left: 12px;
                 padding: 0 6px;
                 background-color: #f6f4ee;
                 border-radius: 4px;
-            }
-            QLabel {
+            }}
+            QLabel {{
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-size: 13px;
-            }
-            QLineEdit {
+            }}
+            QLineEdit {{
                 background-color: #ffffff;
                 color: #261e1b;
                 border: 1px solid #414f42;
                 border-radius: 6px;
                 padding: 6px 10px;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-size: 13px;
-            }
-            QLineEdit:focus {
+            }}
+            QLineEdit:focus {{
                 border: 2px solid #89301c;
-            }
-            QSpinBox {
+            }}
+            QSpinBox {{
                 background-color: #ffffff;
                 color: #261e1b;
                 border: 1px solid #414f42;
                 border-radius: 6px;
                 padding: 6px;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-size: 13px;
-            }
-            QPushButton {
+            }}
+            QPushButton {{
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
                 border-radius: 6px;
                 padding: 8px 16px;
                 border: none;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #546455;
-            }
-            QPushButton#btn_save {
+            }}
+            QPushButton#btn_save {{
                 background-color: #89301c;
                 color: #ffffff;
-            }
-            QPushButton#btn_save:hover {
+            }}
+            QPushButton#btn_save:hover {{
                 background-color: #a23b24;
-            }
-            QPushButton#btn_reset {
+            }}
+            QPushButton#btn_reset {{
                 background-color: #89301c;
                 color: #ffffff;
-            }
-            QPushButton#btn_reset:hover {
+            }}
+            QPushButton#btn_reset:hover {{
                 background-color: #a23b24;
-            }
+            }}
         """)
         self._init_ui()
 
@@ -98,7 +104,7 @@ class SettingsDialog(QDialog):
 
         # Header (Poppins)
         header = QLabel("App Settings ⚙️", self)
-        h_font = QFont("Poppins", 18, QFont.Weight.Bold)
+        h_font = QFont(font_poppins(), 18, QFont.Weight.Bold)
         header.setFont(h_font)
         header.setStyleSheet("color: #89301c; border: none;")
         layout.addWidget(header)

@@ -9,6 +9,7 @@ from src.config import resolve_asset_path
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
+from src.fonts import font_work_sans
 
 class WaterBuddyTray(QSystemTrayIcon):
     def __init__(self, config_manager, db_manager, parent: Optional[QObject] = None) -> None:
@@ -45,24 +46,25 @@ class WaterBuddyTray(QSystemTrayIcon):
 
     def _init_menu(self) -> None:
         menu = QMenu()
-        menu.setStyleSheet("""
-            QMenu {
+        f_work = font_work_sans()
+        menu.setStyleSheet(f"""
+            QMenu {{
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+                font-family: "{f_work}", sans-serif;
                 font-size: 13px;
                 border: 1px solid #414f42;
                 border-radius: 8px;
                 padding: 4px;
-            }
-            QMenu::item {
+            }}
+            QMenu::item {{
                 padding: 6px 20px;
                 border-radius: 4px;
-            }
-            QMenu::item:selected {
+            }}
+            QMenu::item:selected {{
                 background-color: #89301c;
                 color: #ffffff;
-            }
+            }}
         """)
 
         # 1. Trigger Test Reminder

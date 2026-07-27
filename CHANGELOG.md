@@ -5,6 +5,18 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-28
+
+### Added
+- **Brand Palette & Design System**: Full application UI styling using brand tokens (`#89301c` Accent, `#414f42` Secondary, `#f6f4ee` Primary).
+- **Typography Hierarchy**: Integrated **Poppins** for main headers, **Newsreader 14pt** for section subheadings, and **Work Sans** for body text, form fields, and buttons.
+- **Single User Name Setting**: Added customizable user name configuration field (`user_name`) in Settings.
+- **Personalized Speech Bubble Greetings**: Animated character dynamically greets the user with `"Jal lijiye, <name>! 💧"`.
+- **Custom Animation File Pickers**: Added Entry GIF (`Walk-In`) and Exit GIF (`Walk-Out`) file pickers allowing users to load any local GIF animations.
+
+### Removed
+- **Multi-User Dropdown**: Removed legacy multi-user profile switcher dialog in favor of single configurable user profile settings.
+
 ## [1.1.0] - 2026-07-27
 
 ### Added

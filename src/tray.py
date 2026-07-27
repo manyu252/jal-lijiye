@@ -99,12 +99,21 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.setContextMenu(menu)
 
     def _update_reminder_timer(self) -> None:
-        if self.config.get("focus_mode", False):
-            self.reminder_timer.stop()
-            return
-            
-        interval_ms = self.config.get("reminder_interval_minutes", 30) * 60 * 1000
-        self.reminder_timer.start(interval_ms)
+        try:
+            if self.config.get("focus_mode", False):
+                self.reminder_timer.stop()
+                return
+                
+            interval_mins = self.config.get("reminder_interval_minutes", 30)
+            try:
+                interval_mins = int(interval_mins)
+            except (ValueError, TypeError):
+                interval_mins = 30
+                
+            interval_ms = interval_mins * 60 * 1000
+            self.reminder_timer.start(interval_ms)
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error updating reminder timer: {e}")
 
     def trigger_reminder(self) -> None:
         """Manually triggers character walk-in overlay."""
@@ -125,7 +134,12 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_snooze_requested(self) -> None:
         """Callback when user clicks 'Snooze'."""
         try:
-            snooze_ms = self.config.get("snooze_duration_minutes", 10) * 60 * 1000
+            snooze_mins = self.config.get("snooze_duration_minutes", 10)
+            try:
+                snooze_mins = int(snooze_mins)
+            except (ValueError, TypeError):
+                snooze_mins = 10
+            snooze_ms = snooze_mins * 60 * 1000
             self.reminder_timer.start(snooze_ms)
         except Exception as e:
             print(f"[WaterBuddyTray] Error in snooze: {e}")
@@ -146,19 +160,25 @@ class WaterBuddyTray(QSystemTrayIcon):
             print(f"[WaterBuddyTray] Error in session tick: {e}")
 
     def show_stats_dialog(self) -> None:
-        user_name = self.config.get_user_name()
-        dialog = StatsDialog(self.db, user_name=user_name)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        dialog.exec()
+        try:
+            user_name = self.config.get_user_name()
+            dialog = StatsDialog(self.db, user_name=user_name)
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            QApplication.setActiveWindow(dialog)
+            dialog.exec()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error showing stats dialog: {e}")
 
     def show_settings_dialog(self) -> None:
-        dialog = SettingsDialog(self.config)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        if dialog.exec() == SettingsDialog.DialogCode.Accepted:
-            self._update_reminder_timer()
+        try:
+            dialog = SettingsDialog(self.config)
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            QApplication.setActiveWindow(dialog)
+            if dialog.exec() == SettingsDialog.DialogCode.Accepted:
+                self._update_reminder_timer()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error showing settings dialog: {e}")

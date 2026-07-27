@@ -195,31 +195,46 @@ class CharacterOverlayWindow(QWidget):
             print(f"[Overlay] Error in walk-in finished: {e}")
 
     def _on_drink_clicked(self) -> None:
-        self.bubble.hide()
-        self.drink_confirmed.emit()
-        self._walk_out()
+        try:
+            self.bubble.hide()
+            self.drink_confirmed.emit()
+            self._walk_out()
+        except Exception as e:
+            print(f"[Overlay] Error on drink clicked: {e}")
 
     def _on_snooze_clicked(self) -> None:
-        self.bubble.hide()
-        self.snooze_requested.emit()
-        self._walk_out()
+        try:
+            self.bubble.hide()
+            self.snooze_requested.emit()
+            self._walk_out()
+        except Exception as e:
+            print(f"[Overlay] Error on snooze clicked: {e}")
 
     def _walk_out(self) -> None:
-        self.bubble.hide()
-        self._play_gif("asset_exit_gif")
-        screen = QGuiApplication.primaryScreen()
-        if not screen:
-            self.hide()
-            return
+        try:
+            self.bubble.hide()
+            self._play_gif("asset_exit_gif")
+            screen = QGuiApplication.primaryScreen()
+            if not screen:
+                self.hide()
+                return
+                
+            geo = screen.availableGeometry()
+            current_pos = self.pos()
+            end_x = geo.x() - self.width() - 10
             
-        geo = screen.availableGeometry()
-        current_pos = self.pos()
-        end_x = geo.x() - self.width() - 10
-        
-        self.pos_anim = QPropertyAnimation(self, b"pos")
-        self.pos_anim.setDuration(2500)  # 2.5 seconds walk-out
-        self.pos_anim.setStartValue(current_pos)
-        self.pos_anim.setEndValue(QPoint(end_x, current_pos.y()))
-        self.pos_anim.setEasingCurve(QEasingCurve.Type.InQuad)
-        self.pos_anim.finished.connect(self.hide)
-        self.pos_anim.start()
+            self.pos_anim = QPropertyAnimation(self, b"pos")
+            self.pos_anim.setDuration(2500)  # 2.5 seconds walk-out
+            self.pos_anim.setStartValue(current_pos)
+            self.pos_anim.setEndValue(QPoint(end_x, current_pos.y()))
+            self.pos_anim.setEasingCurve(QEasingCurve.Type.InQuad)
+            self.pos_anim.finished.connect(self._safe_hide)
+            self.pos_anim.start()
+        except Exception as e:
+            print(f"[Overlay] Error in walk out: {e}")
+
+    def _safe_hide(self) -> None:
+        try:
+            self.hide()
+        except Exception as e:
+            print(f"[Overlay] Error hiding overlay window: {e}")

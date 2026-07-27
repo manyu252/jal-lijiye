@@ -30,7 +30,10 @@ def resolve_asset_path(relative_path: Union[str, Path]) -> str:
     # Fallback to current working directory
     return str(rel_path.resolve())
 
+from src.__version__ import __version__
+
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "version": __version__,
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,
     "focus_mode": False,

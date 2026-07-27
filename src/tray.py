@@ -1,4 +1,5 @@
-import os
+import sys
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QIcon, QAction
@@ -16,10 +17,12 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.config = config_manager
         self.db = db_manager
         
-        # Load tray icon via resolve_asset_path
-        icon_path = resolve_asset_path(self.config.get("asset_icon", "assets/icon.png"))
-        if os.path.exists(icon_path):
-            self.setIcon(QIcon(icon_path))
+        # Load tray icon via resolve_asset_path with OS-specific default icon
+        is_windows = sys.platform == 'win32'
+        default_icon = "assets/icon.ico" if is_windows else "assets/icon.png"
+        icon_path = Path(resolve_asset_path(self.config.get("asset_icon", default_icon)))
+        if icon_path.exists():
+            self.setIcon(QIcon(str(icon_path)))
         else:
             self.setIcon(QIcon.fromTheme("system-help"))
             

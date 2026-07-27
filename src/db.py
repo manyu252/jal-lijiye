@@ -1,21 +1,22 @@
-import os
 import sqlite3
 from datetime import datetime, date
-from typing import List, Dict, Any, Optional
+from pathlib import Path
+from typing import List, Dict, Any, Optional, Union
 
 class DatabaseManager:
-    def __init__(self, db_path: Optional[str] = None) -> None:
+    def __init__(self, db_path: Optional[Union[str, Path]] = None) -> None:
         if db_path is None:
-            data_dir = os.path.expanduser("~/.jal_lijiye")
-            os.makedirs(data_dir, exist_ok=True)
-            self.db_path = os.path.join(data_dir, "hydration_tracker.db")
+            data_dir = Path.home() / ".jal_lijiye"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            self.db_path = data_dir / "hydration_tracker.db"
         else:
-            self.db_path = db_path
+            self.db_path = Path(db_path)
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
             
         self._init_db()
 
     def _get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(str(self.db_path))
         conn.row_factory = sqlite3.Row
         return conn
 

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve, QTimer, pyqtSignal
 from PyQt6.QtGui import QMovie, QGuiApplication, QFont
@@ -67,6 +67,7 @@ class CharacterOverlayWindow(QWidget):
             Qt.WindowType.Tool
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
         
         self._init_ui()
 
@@ -124,20 +125,20 @@ class CharacterOverlayWindow(QWidget):
     def _play_gif(self, asset_key: str) -> None:
         try:
             asset_type = "exit" if "exit" in asset_key else "walk"
-            gif_path = resolve_asset_path(self.config.get_user_gif(asset_type))
+            gif_path = Path(resolve_asset_path(self.config.get_user_gif(asset_type)))
             
-            if not os.path.exists(gif_path):
+            if not gif_path.exists():
                 raw_default = self.config.get(asset_key, f"assets/{asset_type}.gif")
-                gif_path = resolve_asset_path(raw_default)
+                gif_path = Path(resolve_asset_path(raw_default))
                 
-            if not os.path.exists(gif_path):
+            if not gif_path.exists():
                 print(f"[Overlay] Asset missing: {gif_path}")
                 return
                 
             if self.movie:
                 self.movie.stop()
                 
-            self.movie = QMovie(gif_path)
+            self.movie = QMovie(str(gif_path))
             self.char_label.setMovie(self.movie)
             self.movie.start()
         except Exception as e:

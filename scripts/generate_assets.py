@@ -1,8 +1,8 @@
-import os
+from pathlib import Path
 from PIL import Image, ImageDraw
 
 def ensure_assets_dir():
-    os.makedirs("assets", exist_ok=True)
+    Path("assets").mkdir(exist_ok=True)
 
 def create_water_icon():
     # 64x64 pixel art half-filled glass of water icon
@@ -23,7 +23,8 @@ def create_water_icon():
     draw.line([(18, 14), (22, 48)], fill=(255, 255, 255, 160), width=2)
     
     img.save("assets/icon.png")
-    print("Created assets/icon.png (half-filled glass)")
+    img.save("assets/icon.ico", format="ICO", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    print("Created assets/icon.png and assets/icon.ico (half-filled glass)")
 
 def create_pixel_character_frame(frame_type, frame_idx):
     # 96x96 transparent canvas for high-DPI scaling
@@ -60,44 +61,6 @@ def create_pixel_character_frame(frame_type, frame_idx):
         # Holding water glass on right arm
         draw.rectangle([66, 46 + y_bounce, 78, 64 + y_bounce], fill=water_fill, outline=glass_color, width=2)
         
-    elif frame_type == "ask":
-        # Standing & holding up glass, question mark above
-        draw.rounded_rectangle([28, 32, 68, 72], radius=16, fill=body_color, outline=(255, 255, 255, 200), width=2)
-        draw.rounded_rectangle([34, 38, 62, 62], radius=10, fill=face_color)
-        
-        # Big curious eyes
-        draw.ellipse([38, 44, 44, 52], fill=eye_color)
-        draw.ellipse([52, 44, 58, 52], fill=eye_color)
-        draw.rectangle([38, 54, 42, 57], fill=cheek_color)
-        draw.rectangle([54, 54, 58, 57], fill=cheek_color)
-        
-        # Holding glass up high
-        arm_y = 36 if (frame_idx % 2 == 0) else 34
-        draw.rectangle([64, arm_y, 80, arm_y + 20], fill=water_fill, outline=glass_color, width=2)
-        
-        # Sparkle / Question mark bobbing
-        qm_y = 6 + (frame_idx % 2) * 3
-        draw.rectangle([44, qm_y, 52, qm_y + 4], fill=(241, 196, 15, 255))
-        draw.rectangle([48, qm_y + 4, 52, qm_y + 10], fill=(241, 196, 15, 255))
-        draw.rectangle([48, qm_y + 14, 52, qm_y + 17], fill=(241, 196, 15, 255))
-
-    elif frame_type == "happy":
-        # Jumping happily with hearts/sparkles
-        jump_y = (frame_idx % 2) * -8
-        draw.rounded_rectangle([28, 28 + jump_y, 68, 68 + jump_y], radius=16, fill=(46, 204, 113, 255), outline=(255, 255, 255, 220), width=2)
-        draw.rounded_rectangle([34, 34 + jump_y, 62, 58 + jump_y], radius=10, fill=(212, 239, 223, 255))
-        
-        # Happy eyes (arcs / ^ ^)
-        draw.line([(38, 46 + jump_y), (42, 42 + jump_y), (46, 46 + jump_y)], fill=eye_color, width=2)
-        draw.line([(50, 46 + jump_y), (54, 42 + jump_y), (58, 46 + jump_y)], fill=eye_color, width=2)
-        # Smile
-        draw.arc([42, 48 + jump_y, 54, 56 + jump_y], start=0, end=180, fill=eye_color, width=2)
-        
-        # Hearts / Stars floating
-        star_y = 10 + jump_y
-        draw.polygon([(20, star_y + 5), (25, star_y), (30, star_y + 5), (25, star_y + 10)], fill=(231, 76, 60, 255))
-        draw.polygon([(66, star_y + 5), (71, star_y), (76, star_y + 5), (71, star_y + 10)], fill=(241, 196, 15, 255))
-
     elif frame_type == "exit":
         # Walking away (facing left) with glass
         draw.rounded_rectangle([28, 28 + y_bounce, 68, 68 + y_bounce], radius=16, fill=body_color, outline=(255, 255, 255, 200), width=2)
@@ -133,7 +96,5 @@ if __name__ == "__main__":
     ensure_assets_dir()
     create_water_icon()
     generate_gif("walk", "assets/walk.gif")
-    generate_gif("ask", "assets/ask.gif")
-    generate_gif("happy", "assets/happy.gif")
     generate_gif("exit", "assets/exit.gif")
     print("All default assets generated successfully!")

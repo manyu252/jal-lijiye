@@ -3,6 +3,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+from src.__version__ import __version__
 
 is_windows = sys.platform == 'win32'
 default_icon_asset = "assets/icon.ico" if is_windows else "assets/icon.png"
@@ -17,8 +18,10 @@ def resolve_asset_path(relative_path: Union[str, Path]) -> str:
 
     rel_path = Path(relative_path)
     if hasattr(sys, "_MEIPASS"):
+        # PyInstaller bundle directory
         base_path = Path(sys._MEIPASS)
     else:
+        # Development environment root directory
         base_path = Path(__file__).resolve().parent.parent
     
     full_path = base_path / rel_path
@@ -32,6 +35,7 @@ def resolve_asset_path(relative_path: Union[str, Path]) -> str:
     return str(rel_path)
 
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "version": __version__,
     "user_name": "Abhimanyu",
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,

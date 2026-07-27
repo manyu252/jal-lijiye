@@ -1,21 +1,22 @@
-import os
 import sqlite3
 from datetime import datetime, date
-from typing import List, Dict, Any, Optional
+from pathlib import Path
+from typing import List, Dict, Any, Optional, Union
 
 class DatabaseManager:
-    def __init__(self, db_path: Optional[str] = None) -> None:
+    def __init__(self, db_path: Optional[Union[str, Path]] = None) -> None:
         if db_path is None:
-            data_dir = os.path.expanduser("~/.jal_lijiye")
-            os.makedirs(data_dir, exist_ok=True)
-            self.db_path = os.path.join(data_dir, "hydration_tracker.db")
+            data_dir = Path.home() / ".jal_lijiye"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            self.db_path = data_dir / "hydration_tracker.db"
         else:
-            self.db_path = db_path
+            self.db_path = Path(db_path)
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
             
         self._init_db()
 
     def _get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(str(self.db_path))
         conn.row_factory = sqlite3.Row
         return conn
 
@@ -56,6 +57,32 @@ class DatabaseManager:
                 cursor.execute("ALTER TABLE session_logs ADD COLUMN user_date_key TEXT")
                 cursor.execute("UPDATE session_logs SET user_date_key = 'Default_' || date_str WHERE user_date_key IS NULL")
 
+            # Check if session_logs table has legacy PRIMARY KEY on date_str
+            cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='session_logs'")
+            sql_row = cursor.fetchone()
+            if sql_row and sql_row["sql"]:
+                sql_def = sql_row["sql"].lower()
+                if "date_str text primary key" in sql_def or "date_str primary key" in sql_def or "unique(date_str)" in sql_def or "unique (date_str)" in sql_def:
+                    cursor.execute("""
+                        CREATE TABLE session_logs_migrated (
+                            user_date_key TEXT PRIMARY KEY,
+                            user_name TEXT DEFAULT 'Default',
+                            date_str TEXT NOT NULL,
+                            active_seconds INTEGER DEFAULT 0
+                        )
+                    """)
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO session_logs_migrated (user_date_key, user_name, date_str, active_seconds)
+                        SELECT 
+                            COALESCE(user_date_key, 'Default_' || date_str),
+                            COALESCE(user_name, 'Default'),
+                            date_str,
+                            active_seconds
+                        FROM session_logs
+                    """)
+                    cursor.execute("DROP TABLE session_logs")
+                    cursor.execute("ALTER TABLE session_logs_migrated RENAME TO session_logs")
+
             conn.commit()
 
     def log_drink(self, user_name: str = "Default", timestamp: Optional[datetime] = None, volume_ml: int = 250) -> int:
@@ -86,16 +113,12 @@ class DatabaseManager:
         
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            # Check if row exists for this user_date_key or legacy date_str
-            cursor.execute(
-                "SELECT active_seconds FROM session_logs WHERE user_date_key = ? OR (date_str = ? AND (user_name = ? OR user_name = 'Default' OR user_name IS NULL))",
-                (user_date_key, date_str, user)
-            )
+            cursor.execute("SELECT active_seconds FROM session_logs WHERE user_date_key = ?", (user_date_key,))
             row = cursor.fetchone()
             if row:
                 cursor.execute(
-                    "UPDATE session_logs SET active_seconds = active_seconds + ?, user_date_key = ?, user_name = ? WHERE user_date_key = ? OR (date_str = ? AND (user_name = ? OR user_name = 'Default' OR user_name IS NULL))",
-                    (seconds, user_date_key, user, user_date_key, date_str, user)
+                    "UPDATE session_logs SET active_seconds = active_seconds + ? WHERE user_date_key = ?",
+                    (seconds, user_date_key)
                 )
             else:
                 cursor.execute(
@@ -104,7 +127,7 @@ class DatabaseManager:
                 )
             conn.commit()
             
-            cursor.execute("SELECT active_seconds FROM session_logs WHERE user_date_key = ? OR date_str = ?", (user_date_key, date_str))
+            cursor.execute("SELECT active_seconds FROM session_logs WHERE user_date_key = ?", (user_date_key,))
             row = cursor.fetchone()
             return row["active_seconds"] if row else 0
 
@@ -153,33 +176,26 @@ class DatabaseManager:
             if user_name:
                 cursor.execute("""
                     SELECT 
-                        COALESCE(s.date_str, w.date_str) as date_str,
-                        COALESCE(w.drink_count, 0) as drinks,
+                        w.date_str as date_str,
+                        COUNT(w.id) as drinks,
                         COALESCE(s.active_seconds, 0) as active_seconds
-                    FROM session_logs s
-                    FULL OUTER JOIN (
-                        SELECT date_str, COUNT(*) as drink_count 
-                        FROM water_logs 
-                        WHERE user_name = ?
-                        GROUP BY date_str
-                    ) w ON s.date_str = w.date_str
-                    WHERE s.user_name = ? OR w.date_str IS NOT NULL
-                    ORDER BY date_str DESC
+                    FROM water_logs w
+                    LEFT JOIN session_logs s ON (s.user_date_key = w.user_name || '_' || w.date_str OR s.date_str = w.date_str)
+                    WHERE w.user_name = ?
+                    GROUP BY w.date_str
+                    ORDER BY w.date_str DESC
                     LIMIT ?
-                """, (user_name, user_name, limit_days))
+                """, (user_name, limit_days))
             else:
                 cursor.execute("""
                     SELECT 
-                        COALESCE(s.date_str, w.date_str) as date_str,
-                        COALESCE(w.drink_count, 0) as drinks,
-                        COALESCE(s.active_seconds, 0) as active_seconds
-                    FROM session_logs s
-                    FULL OUTER JOIN (
-                        SELECT date_str, COUNT(*) as drink_count 
-                        FROM water_logs 
-                        GROUP BY date_str
-                    ) w ON s.date_str = w.date_str
-                    ORDER BY date_str DESC
+                        w.date_str as date_str,
+                        COUNT(w.id) as drinks,
+                        COALESCE(SUM(s.active_seconds), 0) as active_seconds
+                    FROM water_logs w
+                    LEFT JOIN session_logs s ON s.date_str = w.date_str
+                    GROUP BY w.date_str
+                    ORDER BY w.date_str DESC
                     LIMIT ?
                 """, (limit_days,))
             

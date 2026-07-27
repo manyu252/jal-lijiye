@@ -49,7 +49,7 @@ class WaterBuddyTray(QSystemTrayIcon):
             QMenu {
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 13px;
                 border: 1px solid #414f42;
                 border-radius: 8px;

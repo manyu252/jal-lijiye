@@ -18,7 +18,7 @@ class ComicSpeechBubble(QFrame):
             }
             QLabel {
                 color: #89301c;
-                font-family: "Poppins", "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Poppins", "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 15px;
                 font-weight: bold;
                 border: none;
@@ -27,7 +27,7 @@ class ComicSpeechBubble(QFrame):
             QPushButton#btn_drink {
                 background-color: #89301c;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
@@ -40,7 +40,7 @@ class ComicSpeechBubble(QFrame):
             QPushButton#btn_snooze {
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;

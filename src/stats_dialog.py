@@ -20,7 +20,7 @@ class StatsDialog(QDialog):
             QDialog {
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
             }
             QFrame.card {
                 background-color: #ffffff;
@@ -30,7 +30,7 @@ class StatsDialog(QDialog):
             }
             QLabel.val {
                 color: #89301c;
-                font-family: "Poppins", sans-serif;
+                font-family: "Poppins", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 22px;
                 font-weight: bold;
             }
@@ -46,13 +46,13 @@ class StatsDialog(QDialog):
                 gridline-color: #eae6dc;
                 border-radius: 8px;
                 border: 1px solid #414f42;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 13px;
             }
             QHeaderView::section {
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-weight: bold;
                 padding: 6px;
                 border: none;
@@ -60,7 +60,7 @@ class StatsDialog(QDialog):
             QPushButton {
                 background-color: #89301c;
                 color: white;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-weight: bold;
                 border-radius: 6px;
                 padding: 8px 18px;

@@ -16,7 +16,7 @@ class SettingsDialog(QDialog):
             QDialog {
                 background-color: #f6f4ee;
                 color: #261e1b;
-                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
             }
             QGroupBox {
                 color: #414f42;
@@ -38,7 +38,7 @@ class SettingsDialog(QDialog):
             }
             QLabel {
                 color: #261e1b;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 13px;
             }
             QLineEdit {
@@ -47,7 +47,7 @@ class SettingsDialog(QDialog):
                 border: 1px solid #414f42;
                 border-radius: 6px;
                 padding: 6px 10px;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 13px;
             }
             QLineEdit:focus {
@@ -59,13 +59,13 @@ class SettingsDialog(QDialog):
                 border: 1px solid #414f42;
                 border-radius: 6px;
                 padding: 6px;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-size: 13px;
             }
             QPushButton {
                 background-color: #414f42;
                 color: #ffffff;
-                font-family: "Work Sans", sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
                 font-weight: bold;
                 border-radius: 6px;
                 padding: 8px 16px;

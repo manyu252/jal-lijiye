@@ -5,6 +5,19 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-27
+
+### Added
+- **Full Cross-Platform Support**: Native execution and packaging support for both Windows and macOS.
+- **Windows System Tray Integration**: Application icon automatically docks into the Windows taskbar notification area (System Tray).
+- **Windows Transparent Window Support**: Added `WA_NoSystemBackground` flag to frameless overlay window initialization for clean transparent rendering on Windows.
+- **OS-Specific Icon Handling**: Dynamic icon resolution using `assets/icon.ico` on Windows and `assets/icon.png` on macOS.
+
+### Changed
+- **Path Management**: Refactored asset, database, and configuration path handling across `config.py`, `db.py`, `overlay.py`, `tray.py`, and `main.py` using Python `pathlib.Path`.
+- **Screen Geometry Calculation**: Refined screen bounds calculation to use `availableGeometry()` ensuring character positioning sits directly above the taskbar on Windows.
+- **PyInstaller Specification**: Updated `Jal Lijiye.spec` to conditionally target Windows and macOS builds with OS-specific icon extensions and conditional `BUNDLE` packaging.
+
 ## [1.0.0] - 2026-07-27
 
 ### Added

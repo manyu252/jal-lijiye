@@ -52,5 +52,10 @@ if is_mac:
         coll,
         name='Jal Lijiye.app',
         icon='assets/icon.png',
-        bundle_identifier=None,
+        bundle_identifier='com.jallijiye.app',
+        info_plist={
+            'CFBundleShortVersionString': '1.1.0',
+            'CFBundleVersion': '1.1.0',
+            'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
+        },
     )

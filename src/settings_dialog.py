@@ -103,9 +103,8 @@ class SettingsDialog(QDialog):
         asset_group = QGroupBox("Custom Pixel Character GIFs", self)
         a_layout = QFormLayout(asset_group)
 
-        self.edit_walk = self._create_asset_row(a_layout, "Walk GIF:", "asset_walk_gif")
-        self.edit_ask = self._create_asset_row(a_layout, "Ask GIF:", "asset_ask_gif")
-        self.edit_happy = self._create_asset_row(a_layout, "Happy GIF:", "asset_happy_gif")
+        self.edit_walk = self._create_asset_row(a_layout, "Walk-In GIF:", "asset_walk_gif")
+        self.edit_exit = self._create_asset_row(a_layout, "Walk-Out GIF:", "asset_exit_gif")
         
         layout.addWidget(asset_group)
 
@@ -148,13 +147,11 @@ class SettingsDialog(QDialog):
         self.spin_interval.setValue(self.config.get("reminder_interval_minutes"))
         self.spin_snooze.setValue(self.config.get("snooze_duration_minutes"))
         self.edit_walk.setText(self.config.get("asset_walk_gif"))
-        self.edit_ask.setText(self.config.get("asset_ask_gif"))
-        self.edit_happy.setText(self.config.get("asset_happy_gif"))
+        self.edit_exit.setText(self.config.get("asset_exit_gif"))
 
     def _save_settings(self):
         self.config.set("reminder_interval_minutes", self.spin_interval.value())
         self.config.set("snooze_duration_minutes", self.spin_snooze.value())
         self.config.set("asset_walk_gif", self.edit_walk.text())
-        self.config.set("asset_ask_gif", self.edit_ask.text())
-        self.config.set("asset_happy_gif", self.edit_happy.text())
+        self.config.set("asset_exit_gif", self.edit_exit.text())
         self.accept()

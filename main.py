@@ -1,5 +1,5 @@
 import sys
-import os
+from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
 
@@ -16,9 +16,11 @@ def main():
     config_manager = ConfigManager()
     db_manager = DatabaseManager()
     
-    icon_path = resolve_asset_path(config_manager.get("asset_icon", "assets/icon.png"))
-    if os.path.exists(icon_path):
-        app.setWindowIcon(QIcon(icon_path))
+    is_windows = sys.platform == 'win32'
+    default_icon = "assets/icon.ico" if is_windows else "assets/icon.png"
+    icon_path = Path(resolve_asset_path(config_manager.get("asset_icon", default_icon)))
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
         
     tray = WaterBuddyTray(config_manager, db_manager)
     tray.show()

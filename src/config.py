@@ -1,30 +1,34 @@
-import os
 import sys
 import json
 import re
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
 
-def resolve_asset_path(relative_path: str) -> str:
+is_windows = sys.platform == 'win32'
+default_icon_asset = "assets/icon.ico" if is_windows else "assets/icon.png"
+
+def resolve_asset_path(relative_path: Union[str, Path]) -> str:
     """
     Resolves relative path to assets working for both development environment
-    and packaged macOS PyInstaller bundle (.app).
+    and packaged PyInstaller bundle (.app / .exe).
     """
     if not relative_path:
-        return relative_path
+        return str(relative_path)
 
+    rel_path = Path(relative_path)
     if hasattr(sys, "_MEIPASS"):
         # PyInstaller bundle directory
-        base_path = sys._MEIPASS
+        base_path = Path(sys._MEIPASS)
     else:
         # Development environment root directory
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base_path = Path(__file__).resolve().parent.parent
     
-    full_path = os.path.join(base_path, relative_path)
-    if os.path.exists(full_path):
-        return full_path
+    full_path = base_path / rel_path
+    if full_path.exists():
+        return str(full_path)
     
     # Fallback to current working directory
-    return os.path.abspath(relative_path)
+    return str(rel_path.resolve())
 
 from src.__version__ import __version__
 
@@ -36,24 +40,24 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "current_user": "Default",
     "asset_walk_gif": "assets/walk.gif",
     "asset_exit_gif": "assets/exit.gif",
-    "asset_icon": "assets/icon.png",
+    "asset_icon": default_icon_asset,
 }
 
 class ConfigManager:
-    def __init__(self, config_path: str = None) -> None:
+    def __init__(self, config_path: Optional[Union[str, Path]] = None) -> None:
         if config_path is None:
-            config_dir = os.path.expanduser("~/.jal_lijiye")
-            os.makedirs(config_dir, exist_ok=True)
-            self.config_path = os.path.join(config_dir, "config.json")
+            config_dir = Path.home() / ".jal_lijiye"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            self.config_path = config_dir / "config.json"
         else:
-            self.config_path = config_path
+            self.config_path = Path(config_path)
             
         self._config: Dict[str, Any] = {}
         self.load()
 
     def load(self) -> Dict[str, Any]:
         """Loads configuration from JSON file or initializes defaults."""
-        if os.path.exists(self.config_path):
+        if self.config_path.exists():
             try:
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     loaded = json.load(f)
@@ -69,7 +73,7 @@ class ConfigManager:
     def save(self) -> None:
         """Saves current configuration to JSON file."""
         try:
-            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(self._config, f, indent=4)
         except Exception as e:
@@ -105,12 +109,12 @@ class ConfigManager:
         slug = re.sub(r'[^a-zA-Z0-9_-]', '', user_name.lower().replace(' ', '_'))
         
         if slug and slug != "default":
-            candidate1 = resolve_asset_path(os.path.join("assets", f"{slug}_{asset_type}.gif"))
-            candidate2 = resolve_asset_path(os.path.join("assets", slug, f"{asset_type}.gif"))
-            if os.path.exists(candidate1):
-                return candidate1
-            if os.path.exists(candidate2):
-                return candidate2
+            candidate1 = Path(resolve_asset_path(Path("assets") / f"{slug}_{asset_type}.gif"))
+            candidate2 = Path(resolve_asset_path(Path("assets") / slug / f"{asset_type}.gif"))
+            if candidate1.exists():
+                return str(candidate1)
+            if candidate2.exists():
+                return str(candidate2)
 
         # Default asset key
         default_key = f"asset_{asset_type}_gif"

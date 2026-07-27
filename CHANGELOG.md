@@ -5,6 +5,12 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-07-28
+
+### Fixed
+- **Qt Font Family Inspection Warning**: Added dynamic runtime font inspection (`src/fonts.py`) via `QFontDatabase` to safely resolve font families at runtime, eliminating the 198ms Qt font alias population warning.
+- **Robust Exception Handling**: Wrapped PyQt6 timer slots and dialog callbacks in `try...except` guards to prevent uncaught Python exceptions from raising `SIGABRT` crashes.
+
 ## [1.2.0] - 2026-07-28
 
 ### Added

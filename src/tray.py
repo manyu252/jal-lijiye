@@ -1,4 +1,5 @@
-import os
+import sys
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QIcon, QAction
@@ -8,7 +9,6 @@ from src.config import resolve_asset_path
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
-from src.profile_dialog import ProfileDialog
 
 class WaterBuddyTray(QSystemTrayIcon):
     def __init__(self, config_manager, db_manager, parent: Optional[QObject] = None) -> None:
@@ -17,9 +17,11 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.db = db_manager
         
         # Load tray icon via resolve_asset_path
-        icon_path = resolve_asset_path(self.config.get("asset_icon", "assets/icon.png"))
-        if os.path.exists(icon_path):
-            self.setIcon(QIcon(icon_path))
+        is_windows = sys.platform == 'win32'
+        default_icon = "assets/icon.ico" if is_windows else "assets/icon.png"
+        icon_path = Path(resolve_asset_path(self.config.get("asset_icon", default_icon)))
+        if icon_path.exists():
+            self.setIcon(QIcon(str(icon_path)))
         else:
             self.setIcon(QIcon.fromTheme("system-help"))
             
@@ -45,9 +47,11 @@ class WaterBuddyTray(QSystemTrayIcon):
         menu = QMenu()
         menu.setStyleSheet("""
             QMenu {
-                background-color: #1a242b;
-                color: #ffffff;
-                border: 1px solid #2c3e50;
+                background-color: #f6f4ee;
+                color: #261e1b;
+                font-family: "Work Sans", "Helvetica Neue", sans-serif;
+                font-size: 13px;
+                border: 1px solid #414f42;
                 border-radius: 8px;
                 padding: 4px;
             }
@@ -56,7 +60,8 @@ class WaterBuddyTray(QSystemTrayIcon):
                 border-radius: 4px;
             }
             QMenu::item:selected {
-                background-color: #3498db;
+                background-color: #89301c;
+                color: #ffffff;
             }
         """)
 
@@ -84,15 +89,9 @@ class WaterBuddyTray(QSystemTrayIcon):
         act_settings.triggered.connect(self.show_settings_dialog)
         menu.addAction(act_settings)
 
-        # 5. Profile / Switch User (placed below Settings)
-        current_user = self.config.get_current_user()
-        self.act_profile = QAction(f"Switch User ({current_user})", self)
-        self.act_profile.triggered.connect(self.show_profile_dialog)
-        menu.addAction(self.act_profile)
-
         menu.addSeparator()
 
-        # 6. Quit
+        # 5. Quit
         act_quit = QAction("Quit Jal Lijiye", self)
         act_quit.triggered.connect(QApplication.instance().quit)
         menu.addAction(act_quit)
@@ -117,7 +116,7 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_drink_confirmed(self) -> None:
         """Callback when user confirms drinking water."""
         try:
-            user_name = self.config.get_current_user()
+            user_name = self.config.get_user_name()
             self.db.log_drink(user_name=user_name)
             self._update_reminder_timer()
         except Exception as e:
@@ -141,23 +140,13 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_session_tick(self) -> None:
         """Increments active laptop session time by 60 seconds in SQLite for active user."""
         try:
-            user_name = self.config.get_current_user()
+            user_name = self.config.get_user_name()
             self.db.add_session_time(60, user_name=user_name)
         except Exception as e:
             print(f"[WaterBuddyTray] Error in session tick: {e}")
 
-    def show_profile_dialog(self) -> None:
-        dialog = ProfileDialog(self.config)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        if dialog.exec() == ProfileDialog.DialogCode.Accepted:
-            current_user = self.config.get_current_user()
-            self.act_profile.setText(f"Switch User ({current_user})")
-
     def show_stats_dialog(self) -> None:
-        user_name = self.config.get_current_user()
+        user_name = self.config.get_user_name()
         dialog = StatsDialog(self.db, user_name=user_name)
         dialog.show()
         dialog.raise_()
@@ -173,5 +162,3 @@ class WaterBuddyTray(QSystemTrayIcon):
         QApplication.setActiveWindow(dialog)
         if dialog.exec() == SettingsDialog.DialogCode.Accepted:
             self._update_reminder_timer()
-            current_user = self.config.get_current_user()
-            self.act_profile.setText(f"Switch User ({current_user})")

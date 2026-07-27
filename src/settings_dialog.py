@@ -11,59 +11,82 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.config = config_manager
         self.setWindowTitle("Settings - Jal Lijiye")
-        self.setFixedSize(480, 420)
+        self.setFixedSize(500, 480)
         self.setStyleSheet("""
             QDialog {
-                background-color: #1a242b;
-                color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                background-color: #f6f4ee;
+                color: #261e1b;
+                font-family: "Work Sans", "Helvetica Neue", sans-serif;
             }
             QGroupBox {
-                color: #aed6f1;
+                color: #414f42;
+                font-family: "Newsreader", Georgia, serif;
+                font-size: 16px;
                 font-weight: bold;
-                border: 1px solid rgba(52, 152, 219, 100);
-                border-radius: 8px;
-                margin-top: 12px;
-                padding-top: 12px;
+                border: 1.5px solid #414f42;
+                border-radius: 10px;
+                margin-top: 14px;
+                padding-top: 14px;
+                background-color: #ffffff;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                left: 12px;
+                padding: 0 6px;
+                background-color: #f6f4ee;
+                border-radius: 4px;
             }
             QLabel {
-                color: #ffffff;
+                color: #261e1b;
+                font-family: "Work Sans", sans-serif;
+                font-size: 13px;
             }
             QLineEdit {
-                background-color: #24333e;
-                color: #ffffff;
-                border: 1px solid #2c3e50;
+                background-color: #ffffff;
+                color: #261e1b;
+                border: 1px solid #414f42;
                 border-radius: 6px;
-                padding: 6px;
+                padding: 6px 10px;
+                font-family: "Work Sans", sans-serif;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #89301c;
             }
             QSpinBox {
-                background-color: #24333e;
-                color: #ffffff;
-                border: 1px solid #2c3e50;
+                background-color: #ffffff;
+                color: #261e1b;
+                border: 1px solid #414f42;
                 border-radius: 6px;
                 padding: 6px;
+                font-family: "Work Sans", sans-serif;
+                font-size: 13px;
             }
             QPushButton {
-                background-color: #3498db;
-                color: white;
+                background-color: #414f42;
+                color: #ffffff;
+                font-family: "Work Sans", sans-serif;
                 font-weight: bold;
                 border-radius: 6px;
-                padding: 6px 12px;
+                padding: 8px 16px;
                 border: none;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background-color: #546455;
+            }
+            QPushButton#btn_save {
+                background-color: #89301c;
+                color: #ffffff;
+            }
+            QPushButton#btn_save:hover {
+                background-color: #a23b24;
             }
             QPushButton#btn_reset {
-                background-color: #e74c3c;
+                background-color: #89301c;
+                color: #ffffff;
             }
             QPushButton#btn_reset:hover {
-                background-color: #c0392b;
+                background-color: #a23b24;
             }
         """)
         self._init_ui()
@@ -71,19 +94,31 @@ class SettingsDialog(QDialog):
     def _init_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(14)
-        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setContentsMargins(20, 20, 20, 20)
 
-        # Header
+        # Header (Poppins)
         header = QLabel("App Settings ⚙️", self)
-        h_font = QFont()
-        h_font.setPointSize(16)
-        h_font.setBold(True)
+        h_font = QFont("Poppins", 18, QFont.Weight.Bold)
         header.setFont(h_font)
+        header.setStyleSheet("color: #89301c; border: none;")
         layout.addWidget(header)
+
+        # Profile Group
+        profile_group = QGroupBox("User Profile", self)
+        p_layout = QFormLayout(profile_group)
+        p_layout.setContentsMargins(14, 14, 14, 14)
+        p_layout.setSpacing(10)
+        
+        self.edit_name = QLineEdit(self.config.get_user_name(), profile_group)
+        self.edit_name.setPlaceholderText("Enter your name (e.g. Abhimanyu)")
+        p_layout.addRow("Your Name:", self.edit_name)
+        layout.addWidget(profile_group)
 
         # Timers Group
         timer_group = QGroupBox("Reminder Timers", self)
         t_layout = QFormLayout(timer_group)
+        t_layout.setContentsMargins(14, 14, 14, 14)
+        t_layout.setSpacing(10)
         
         self.spin_interval = QSpinBox(timer_group)
         self.spin_interval.setRange(1, 240)
@@ -99,39 +134,45 @@ class SettingsDialog(QDialog):
         t_layout.addRow("Snooze Duration:", self.spin_snooze)
         layout.addWidget(timer_group)
 
-        # Assets Group
-        asset_group = QGroupBox("Custom Pixel Character GIFs", self)
+        # Custom Animation GIFs Group
+        asset_group = QGroupBox("Custom Character Animations", self)
         a_layout = QFormLayout(asset_group)
+        a_layout.setContentsMargins(14, 14, 14, 14)
+        a_layout.setSpacing(10)
 
-        self.edit_walk = self._create_asset_row(a_layout, "Walk GIF:", "asset_walk_gif")
-        self.edit_ask = self._create_asset_row(a_layout, "Ask GIF:", "asset_ask_gif")
-        self.edit_happy = self._create_asset_row(a_layout, "Happy GIF:", "asset_happy_gif")
+        self.edit_walk = self._create_asset_row(a_layout, "Entry GIF (Walk-In):", "asset_walk_gif", "assets/walk.gif")
+        self.edit_exit = self._create_asset_row(a_layout, "Exit GIF (Walk-Out):", "asset_exit_gif", "assets/exit.gif")
         
         layout.addWidget(asset_group)
 
-        # Buttons
+        # Action Buttons
         btn_layout = QHBoxLayout()
         btn_reset = QPushButton("Reset Defaults", self)
         btn_reset.setObjectName("btn_reset")
+        btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_reset.clicked.connect(self._reset_defaults)
         btn_layout.addWidget(btn_reset)
         
         btn_layout.addStretch()
         
         btn_cancel = QPushButton("Cancel", self)
+        btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_cancel.clicked.connect(self.reject)
         
         btn_save = QPushButton("Save Settings", self)
+        btn_save.setObjectName("btn_save")
+        btn_save.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_save.clicked.connect(self._save_settings)
         
         btn_layout.addWidget(btn_cancel)
         btn_layout.addWidget(btn_save)
         layout.addLayout(btn_layout)
 
-    def _create_asset_row(self, form_layout: QFormLayout, label_text: str, config_key: str) -> QLineEdit:
+    def _create_asset_row(self, form_layout: QFormLayout, label_text: str, config_key: str, default_val: str) -> QLineEdit:
         row = QHBoxLayout()
-        edit = QLineEdit(self.config.get(config_key, ""), self)
+        edit = QLineEdit(self.config.get(config_key, default_val), self)
         btn_browse = QPushButton("Browse...", self)
+        btn_browse.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_browse.clicked.connect(lambda: self._browse_gif(edit))
         row.addWidget(edit)
         row.addWidget(btn_browse)
@@ -139,22 +180,22 @@ class SettingsDialog(QDialog):
         return edit
 
     def _browse_gif(self, line_edit: QLineEdit):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Character GIF", "", "GIF Files (*.gif)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Custom Character GIF", "", "GIF Files (*.gif)")
         if file_path:
             line_edit.setText(file_path)
 
     def _reset_defaults(self):
         self.config.reset_defaults()
+        self.edit_name.setText(self.config.get_user_name())
         self.spin_interval.setValue(self.config.get("reminder_interval_minutes"))
         self.spin_snooze.setValue(self.config.get("snooze_duration_minutes"))
         self.edit_walk.setText(self.config.get("asset_walk_gif"))
-        self.edit_ask.setText(self.config.get("asset_ask_gif"))
-        self.edit_happy.setText(self.config.get("asset_happy_gif"))
+        self.edit_exit.setText(self.config.get("asset_exit_gif"))
 
     def _save_settings(self):
+        self.config.set_user_name(self.edit_name.text())
         self.config.set("reminder_interval_minutes", self.spin_interval.value())
         self.config.set("snooze_duration_minutes", self.spin_snooze.value())
-        self.config.set("asset_walk_gif", self.edit_walk.text())
-        self.config.set("asset_ask_gif", self.edit_ask.text())
-        self.config.set("asset_happy_gif", self.edit_happy.text())
+        self.config.set("asset_walk_gif", self.edit_walk.text().strip())
+        self.config.set("asset_exit_gif", self.edit_exit.text().strip())
         self.accept()

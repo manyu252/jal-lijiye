@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve, QTimer, pyqtSignal
 from PyQt6.QtGui import QMovie, QGuiApplication, QFont
@@ -7,48 +7,48 @@ from PyQt6.QtWidgets import (
 from src.config import resolve_asset_path
 
 class ComicSpeechBubble(QFrame):
-    """Custom speech bubble widget with comic style border and pointing tail."""
+    """Custom speech bubble widget with brand styling and pointing tail."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet("""
             QFrame {
-                background-color: #ffffff;
-                border: 2.5px solid #2c3e50;
+                background-color: #f6f4ee;
+                border: 2.5px solid #89301c;
                 border-radius: 14px;
             }
             QLabel {
-                color: #1a242b;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                color: #89301c;
+                font-family: "Poppins", "Work Sans", "Helvetica Neue", sans-serif;
                 font-size: 15px;
                 font-weight: bold;
                 border: none;
                 background: transparent;
             }
             QPushButton#btn_drink {
-                background-color: #27ae60;
+                background-color: #89301c;
                 color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
-                padding: 6px 12px;
+                padding: 6px 14px;
                 border: none;
             }
             QPushButton#btn_drink:hover {
-                background-color: #2ecc71;
+                background-color: #a23b24;
             }
             QPushButton#btn_snooze {
-                background-color: #7f8c8d;
+                background-color: #414f42;
                 color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: "Work Sans", "Helvetica Neue", sans-serif;
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
-                padding: 6px 12px;
+                padding: 6px 14px;
                 border: none;
             }
             QPushButton#btn_snooze:hover {
-                background-color: #95a5a6;
+                background-color: #546455;
             }
         """)
 
@@ -67,6 +67,7 @@ class CharacterOverlayWindow(QWidget):
             Qt.WindowType.Tool
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
         
         self._init_ui()
 
@@ -79,7 +80,7 @@ class CharacterOverlayWindow(QWidget):
         # 1. Comic Speech Bubble (Top)
         self.bubble = ComicSpeechBubble(self)
         bubble_layout = QVBoxLayout(self.bubble)
-        bubble_layout.setContentsMargins(12, 10, 12, 10)
+        bubble_layout.setContentsMargins(14, 10, 14, 10)
         bubble_layout.setSpacing(8)
 
         # Text: "Jal lijiye! 💧"
@@ -124,20 +125,20 @@ class CharacterOverlayWindow(QWidget):
     def _play_gif(self, asset_key: str) -> None:
         try:
             asset_type = "exit" if "exit" in asset_key else "walk"
-            gif_path = resolve_asset_path(self.config.get_user_gif(asset_type))
+            gif_path = Path(self.config.get_user_gif(asset_type))
             
-            if not os.path.exists(gif_path):
+            if not gif_path.exists():
                 raw_default = self.config.get(asset_key, f"assets/{asset_type}.gif")
-                gif_path = resolve_asset_path(raw_default)
+                gif_path = Path(resolve_asset_path(raw_default))
                 
-            if not os.path.exists(gif_path):
+            if not gif_path.exists():
                 print(f"[Overlay] Asset missing: {gif_path}")
                 return
                 
             if self.movie:
                 self.movie.stop()
                 
-            self.movie = QMovie(gif_path)
+            self.movie = QMovie(str(gif_path))
             self.char_label.setMovie(self.movie)
             self.movie.start()
         except Exception as e:
@@ -183,8 +184,8 @@ class CharacterOverlayWindow(QWidget):
             if self.movie:
                 self.movie.setPaused(True)
                 
-            user_name = self.config.get_current_user()
-            if user_name and user_name.lower() != "default":
+            user_name = self.config.get_user_name()
+            if user_name:
                 self.lbl_title.setText(f"Jal lijiye, {user_name}! 💧")
             else:
                 self.lbl_title.setText("Jal lijiye! 💧")

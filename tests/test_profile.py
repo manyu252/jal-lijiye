@@ -7,15 +7,17 @@ from src.db import DatabaseManager
 def test_config_user_profiles():
     with tempfile.TemporaryDirectory() as tmpdir:
         cfg = ConfigManager(os.path.join(tmpdir, "config.json"))
-        assert cfg.get_current_user() == "Default"
+        assert cfg.get_user_name() == "Abhimanyu"
         
-        cfg.set_current_user("Abhimanyu")
-        assert cfg.get_current_user() == "Abhimanyu"
+        cfg.set_user_name("Shreya")
+        assert cfg.get_user_name() == "Shreya"
         
-        # Test GIF resolution for user
-        # Should fallback to assets/walk.gif if assets/abhimanyu_walk.gif does not exist
+        # Test GIF resolution for user-configured GIF
         walk_gif = cfg.get_user_gif("walk")
         assert walk_gif.endswith("walk.gif")
+        
+        exit_gif = cfg.get_user_gif("exit")
+        assert exit_gif.endswith("exit.gif")
 
 def test_db_multi_user_isolation():
     with tempfile.TemporaryDirectory() as tmpdir:

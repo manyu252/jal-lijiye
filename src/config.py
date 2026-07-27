@@ -1,56 +1,61 @@
-import os
 import sys
 import json
 import re
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
 
-def resolve_asset_path(relative_path: str) -> str:
+is_windows = sys.platform == 'win32'
+default_icon_asset = "assets/icon.ico" if is_windows else "assets/icon.png"
+
+def resolve_asset_path(relative_path: Union[str, Path]) -> str:
     """
     Resolves relative path to assets working for both development environment
-    and packaged macOS PyInstaller bundle (.app).
+    and packaged PyInstaller bundle (.app / .exe).
     """
     if not relative_path:
-        return relative_path
+        return str(relative_path)
 
+    rel_path = Path(relative_path)
     if hasattr(sys, "_MEIPASS"):
-        # PyInstaller bundle directory
-        base_path = sys._MEIPASS
+        base_path = Path(sys._MEIPASS)
     else:
-        # Development environment root directory
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base_path = Path(__file__).resolve().parent.parent
     
-    full_path = os.path.join(base_path, relative_path)
-    if os.path.exists(full_path):
-        return full_path
+    full_path = base_path / rel_path
+    if full_path.exists():
+        return str(full_path)
     
-    # Fallback to current working directory
-    return os.path.abspath(relative_path)
+    # Fallback to absolute or current working directory path
+    if rel_path.exists():
+        return str(rel_path.resolve())
+        
+    return str(rel_path)
 
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "user_name": "Abhimanyu",
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,
     "focus_mode": False,
-    "current_user": "Default",
     "asset_walk_gif": "assets/walk.gif",
     "asset_exit_gif": "assets/exit.gif",
-    "asset_icon": "assets/icon.png",
+    "asset_icon": default_icon_asset,
 }
 
 class ConfigManager:
-    def __init__(self, config_path: str = None) -> None:
+    def __init__(self, config_path: Optional[Union[str, Path]] = None) -> None:
         if config_path is None:
-            config_dir = os.path.expanduser("~/.jal_lijiye")
-            os.makedirs(config_dir, exist_ok=True)
-            self.config_path = os.path.join(config_dir, "config.json")
+            config_dir = Path.home() / ".jal_lijiye"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            self.config_path = config_dir / "config.json"
         else:
-            self.config_path = config_path
+            self.config_path = Path(config_path)
             
         self._config: Dict[str, Any] = {}
         self.load()
 
     def load(self) -> Dict[str, Any]:
         """Loads configuration from JSON file or initializes defaults."""
-        if os.path.exists(self.config_path):
+        if self.config_path.exists():
             try:
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     loaded = json.load(f)
@@ -66,7 +71,7 @@ class ConfigManager:
     def save(self) -> None:
         """Saves current configuration to JSON file."""
         try:
-            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(self._config, f, indent=4)
         except Exception as e:
@@ -81,38 +86,40 @@ class ConfigManager:
         self._config[key] = value
         self.save()
 
+    def get_user_name(self) -> str:
+        """Returns the configured user name."""
+        return self.get("user_name", self.get("current_user", "Abhimanyu")).strip()
+
+    def set_user_name(self, name: str) -> None:
+        """Sets user name."""
+        clean_name = name.strip() if name else ""
+        self.set("user_name", clean_name)
+        self.set("current_user", clean_name)
+
     def get_current_user(self) -> str:
-        """Returns the active user profile name."""
-        return self.get("current_user", "Default")
+        """Alias for get_user_name for compatibility."""
+        return self.get_user_name()
 
     def set_current_user(self, name: str) -> None:
-        """Sets active user profile name."""
-        clean_name = name.strip() if name and name.strip() else "Default"
-        self.set("current_user", clean_name)
+        """Alias for set_user_name for compatibility."""
+        self.set_user_name(name)
 
     def get_user_gif(self, asset_type: str) -> str:
         """
-        Returns absolute file path for user-specific GIF (e.g. assets/<name>_walk.gif)
-        Fallback order:
-        1. assets/<slug>_<asset_type>.gif (e.g. assets/shreya_walk.gif)
-        2. assets/<slug>/<asset_type>.gif
-        3. Configured default (assets/walk.gif or assets/exit.gif)
+        Returns file path for user-configured entry ('walk') or exit ('exit') GIF.
+        Falls back to configured asset path or default assets/walk.gif / assets/exit.gif.
         """
-        user_name = self.get_current_user()
-        slug = re.sub(r'[^a-zA-Z0-9_-]', '', user_name.lower().replace(' ', '_'))
+        asset_key = f"asset_{asset_type}_gif"
+        default_val = f"assets/{asset_type}.gif"
+        configured_path = self.get(asset_key, default_val)
         
-        if slug and slug != "default":
-            candidate1 = resolve_asset_path(os.path.join("assets", f"{slug}_{asset_type}.gif"))
-            candidate2 = resolve_asset_path(os.path.join("assets", slug, f"{asset_type}.gif"))
-            if os.path.exists(candidate1):
-                return candidate1
-            if os.path.exists(candidate2):
-                return candidate2
-
-        # Default asset key
-        default_key = f"asset_{asset_type}_gif"
-        raw_path = self.get(default_key, f"assets/{asset_type}.gif")
-        return resolve_asset_path(raw_path)
+        # Check if absolute/direct file exists
+        direct_path = Path(configured_path)
+        if direct_path.exists():
+            return str(direct_path)
+            
+        # Fallback to resolved asset path
+        return resolve_asset_path(configured_path)
 
     def reset_defaults(self) -> None:
         """Resets configuration to default values."""

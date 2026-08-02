@@ -12,7 +12,7 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.config = config_manager
         self.setWindowTitle("Settings - Jal Lijiye")
-        self.setFixedSize(520, 520)
+        self.setFixedSize(520, 560)
         self.setStyleSheet("""
             QDialog {
                 background-color: #1a242b;
@@ -147,8 +147,8 @@ class SettingsDialog(QDialog):
         # 3. Custom Assets Group
         asset_group = QGroupBox("Custom Character GIFs", self)
         a_layout = QFormLayout(asset_group)
-        self.edit_walk = self._create_asset_row(a_layout, "Walk GIF:", "asset_walk_gif")
-        self.edit_exit = self._create_asset_row(a_layout, "Exit GIF:", "asset_exit_gif")
+        self.edit_walk = self._create_asset_row(a_layout, "Walk-In GIF:", "asset_walk_gif")
+        self.edit_exit = self._create_asset_row(a_layout, "Walk-Out GIF:", "asset_exit_gif")
         layout.addWidget(asset_group)
 
         # Buttons

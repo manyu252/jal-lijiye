@@ -23,13 +23,15 @@ a = Analysis(
     optimize=0,
 )
 
-# Filter out Qt location permission plugins that cause dyld launch crashes on macOS
-a.binaries = [
-    x for x in a.binaries
-    if 'qdarwinpermissionplugin' not in x[0].lower()
-    and 'positioning' not in x[0].lower()
-    and 'location' not in x[0].lower()
-]
+# Completely strip Qt permission, positioning, and location plugins from both binaries and datas
+def is_permission_or_location(item):
+    name = str(item[0]).lower()
+    src = str(item[1]).lower() if len(item) > 1 else ""
+    forbidden = ['permission', 'positioning', 'location', 'qdarwinpermissionplugin']
+    return any(k in name or k in src for k in forbidden)
+
+a.binaries = [x for x in a.binaries if not is_permission_or_location(x)]
+a.datas = [x for x in a.datas if not is_permission_or_location(x)]
 
 pyz = PYZ(a.pure)
 
@@ -70,8 +72,8 @@ if is_mac:
             'CFBundleName': 'Jal Lijiye',
             'CFBundleDisplayName': 'Jal Lijiye',
             'CFBundleIdentifier': 'com.jallijiye.app',
-            'CFBundleShortVersionString': '1.3.1',
-            'CFBundleVersion': '1.3.1',
+            'CFBundleShortVersionString': '1.3.2',
+            'CFBundleVersion': '1.3.2',
             'NSHighResolutionCapable': 'True',
             'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
         },

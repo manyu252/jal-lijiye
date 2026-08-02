@@ -3,7 +3,6 @@ import json
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-from src.__version__ import __version__
 
 is_windows = sys.platform == 'win32'
 default_icon_asset = "assets/icon.ico" if is_windows else "assets/icon.png"
@@ -28,18 +27,19 @@ def resolve_asset_path(relative_path: Union[str, Path]) -> str:
     if full_path.exists():
         return str(full_path)
     
-    # Fallback to absolute or current working directory path
-    if rel_path.exists():
-        return str(rel_path.resolve())
-        
-    return str(rel_path)
+    # Fallback to current working directory
+    return str(rel_path.resolve())
+
+from src.__version__ import __version__
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "version": __version__,
-    "user_name": "Abhimanyu",
     "reminder_interval_minutes": 30,
     "snooze_duration_minutes": 10,
     "focus_mode": False,
+    "current_user": "Default",
+    "custom_message": "",
+    "screen_position": "bottom_left",
     "asset_walk_gif": "assets/walk.gif",
     "asset_exit_gif": "assets/exit.gif",
     "asset_icon": default_icon_asset,
@@ -90,40 +90,38 @@ class ConfigManager:
         self._config[key] = value
         self.save()
 
-    def get_user_name(self) -> str:
-        """Returns the configured user name."""
-        return self.get("user_name", self.get("current_user", "Abhimanyu")).strip()
-
-    def set_user_name(self, name: str) -> None:
-        """Sets user name."""
-        clean_name = name.strip() if name else ""
-        self.set("user_name", clean_name)
-        self.set("current_user", clean_name)
-
     def get_current_user(self) -> str:
-        """Alias for get_user_name for compatibility."""
-        return self.get_user_name()
+        """Returns the active user profile name."""
+        return self.get("current_user", "Default")
 
     def set_current_user(self, name: str) -> None:
-        """Alias for set_user_name for compatibility."""
-        self.set_user_name(name)
+        """Sets active user profile name."""
+        clean_name = name.strip() if name and name.strip() else "Default"
+        self.set("current_user", clean_name)
 
     def get_user_gif(self, asset_type: str) -> str:
         """
-        Returns file path for user-configured entry ('walk') or exit ('exit') GIF.
-        Falls back to configured asset path or default assets/walk.gif / assets/exit.gif.
+        Returns file path for user-specific GIF (e.g. assets/<name>_walk.gif)
+        Fallback order:
+        1. assets/<slug>_<asset_type>.gif (e.g. assets/shreya_walk.gif)
+        2. assets/<slug>/<asset_type>.gif
+        3. Configured default (assets/walk.gif or assets/exit.gif)
         """
-        asset_key = f"asset_{asset_type}_gif"
-        default_val = f"assets/{asset_type}.gif"
-        configured_path = self.get(asset_key, default_val)
+        user_name = self.get_current_user()
+        slug = re.sub(r'[^a-zA-Z0-9_-]', '', user_name.lower().replace(' ', '_'))
         
-        # Check if absolute/direct file exists
-        direct_path = Path(configured_path)
-        if direct_path.exists():
-            return str(direct_path)
-            
-        # Fallback to resolved asset path
-        return resolve_asset_path(configured_path)
+        if slug and slug != "default":
+            candidate1 = Path(resolve_asset_path(Path("assets") / f"{slug}_{asset_type}.gif"))
+            candidate2 = Path(resolve_asset_path(Path("assets") / slug / f"{asset_type}.gif"))
+            if candidate1.exists():
+                return str(candidate1)
+            if candidate2.exists():
+                return str(candidate2)
+
+        # Default asset key
+        default_key = f"asset_{asset_type}_gif"
+        raw_path = self.get(default_key, f"assets/{asset_type}.gif")
+        return resolve_asset_path(raw_path)
 
     def reset_defaults(self) -> None:
         """Resets configuration to default values."""

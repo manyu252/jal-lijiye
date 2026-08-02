@@ -1,9 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-import sys
 
-is_windows = sys.platform == 'win32'
-is_mac = sys.platform == 'darwin'
-icon_path = 'assets/icon.ico' if is_windows else 'assets/icon.png'
 
 a = Analysis(
     ['main.py'],
@@ -36,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=[icon_path],
+    icon=['assets/icon.png'],
 )
 coll = COLLECT(
     exe,
@@ -47,15 +43,9 @@ coll = COLLECT(
     upx_exclude=[],
     name='Jal Lijiye',
 )
-if is_mac:
-    app = BUNDLE(
-        coll,
-        name='Jal Lijiye.app',
-        icon='assets/icon.png',
-        bundle_identifier='com.jallijiye.app',
-        info_plist={
-            'CFBundleShortVersionString': '1.2.1',
-            'CFBundleVersion': '1.2.1',
-            'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
-        },
-    )
+app = BUNDLE(
+    coll,
+    name='Jal Lijiye.app',
+    icon='assets/icon.png',
+    bundle_identifier=None,
+)

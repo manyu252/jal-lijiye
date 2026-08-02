@@ -5,6 +5,13 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-08-03
+
+### Fixed
+- **macOS `dyld` Permission Crash (`SIGSEGV 11`)**: Filtered out `qdarwinpermissionplugin` and `QtPositioning` shared libraries from PyInstaller bundle analysis to prevent static initializer launch crashes.
+- **Bundle Size Optimization**: Separated production runtime dependencies from heavy dev packages (`opencv-python`), reducing release zips down to minimal footprint (~70 MB).
+- **Windows Release Zip Fix**: Fixed PowerShell archive path handling in GitHub Actions release workflow.
+
 ## [1.3.0] - 2026-08-02
 
 ### Added

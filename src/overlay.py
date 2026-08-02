@@ -6,51 +6,55 @@ from PyQt6.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
 )
 from src.config import resolve_asset_path
+from src.fonts import get_system_font
 
 class ComicSpeechBubble(QFrame):
     """Custom speech bubble widget with comic style border and pointing tail."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setStyleSheet("""
-            QFrame {
+
+        font_stack = '"Poppins", "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif'
+
+        self.setStyleSheet(f"""
+            QFrame {{
                 background-color: #ffffff;
-                border: 2.5px solid #2c3e50;
+                border: 2.5px solid #89301c;
                 border-radius: 14px;
-            }
-            QLabel {
-                color: #1a242b;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                font-size: 14px;
+            }}
+            QLabel {{
+                color: #89301c;
+                font-family: {font_stack};
+                font-size: 15px;
                 font-weight: bold;
                 border: none;
                 background: transparent;
-            }
-            QPushButton#btn_drink {
-                background-color: #27ae60;
+            }}
+            QPushButton#btn_drink {{
+                background-color: #89301c;
                 color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: {font_stack};
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
                 padding: 6px 12px;
                 border: none;
-            }
-            QPushButton#btn_drink:hover {
-                background-color: #2ecc71;
-            }
-            QPushButton#btn_snooze {
-                background-color: #7f8c8d;
+            }}
+            QPushButton#btn_drink:hover {{
+                background-color: #a03821;
+            }}
+            QPushButton#btn_snooze {{
+                background-color: #414f42;
                 color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: {font_stack};
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
                 padding: 6px 12px;
                 border: none;
-            }
-            QPushButton#btn_snooze:hover {
-                background-color: #95a5a6;
-            }
+            }}
+            QPushButton#btn_snooze:hover {{
+                background-color: #4e5e4f;
+            }}
         """)
 
 class CharacterOverlayWindow(QWidget):
@@ -236,14 +240,20 @@ class CharacterOverlayWindow(QWidget):
             print(f"[Overlay] Error in walk-in finished: {e}")
 
     def _on_drink_clicked(self) -> None:
-        self.bubble.hide()
-        self.drink_confirmed.emit()
-        self._walk_out()
+        try:
+            self.bubble.hide()
+            self.drink_confirmed.emit()
+            self._walk_out()
+        except Exception as e:
+            print(f"[Overlay] Error in drink clicked: {e}")
 
     def _on_snooze_clicked(self) -> None:
-        self.bubble.hide()
-        self.snooze_requested.emit()
-        self._walk_out()
+        try:
+            self.bubble.hide()
+            self.snooze_requested.emit()
+            self._walk_out()
+        except Exception as e:
+            print(f"[Overlay] Error in snooze clicked: {e}")
 
     def _walk_out(self) -> None:
         try:

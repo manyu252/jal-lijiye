@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
 )
+from src.fonts import font_poppins, font_newsreader, font_work_sans
 
 class StatsDialog(QDialog):
     def __init__(self, db_manager, user_name: Optional[str] = None, parent=None):
@@ -15,69 +16,79 @@ class StatsDialog(QDialog):
         
         title_user = f" ({user_name})" if user_name else ""
         self.setWindowTitle(f"Hydration Statistics{title_user} - Jal Lijiye")
-        self.setFixedSize(520, 440)
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #1a242b;
-                color: #ffffff;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            }
-            QFrame.card {
-                background-color: #24333e;
-                border-radius: 12px;
-                border: 1px solid rgba(52, 152, 219, 100);
-                padding: 12px;
-            }
-            QLabel.val {
-                color: #2ecc71;
+        self.setFixedSize(540, 460)
+        
+        f_pop = font_poppins()
+        f_news = font_newsreader()
+        f_work = font_work_sans()
+        
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: #f6f4ee;
+                color: #261e1b;
+                font-family: "{f_work}", sans-serif;
+            }}
+            QFrame.card {{
+                background-color: #ffffff;
+                border-radius: 10px;
+                border: 1.5px solid #414f42;
+                padding: 10px;
+            }}
+            QLabel.val {{
+                color: #89301c;
+                font-family: "{f_pop}", sans-serif;
                 font-size: 22px;
                 font-weight: bold;
-            }
-            QLabel.lbl {
-                color: #aed6f1;
-                font-size: 11px;
-                text-transform: uppercase;
-            }
-            QTableWidget {
-                background-color: #24333e;
+            }}
+            QLabel.lbl {{
+                color: #414f42;
+                font-family: "{f_news}", sans-serif;
+                font-size: 12px;
+                font-weight: bold;
+            }}
+            QTableWidget {{
+                background-color: #ffffff;
+                color: #261e1b;
+                gridline-color: #eae6dc;
+                border-radius: 8px;
+                border: 1px solid #414f42;
+                font-family: "{f_work}", sans-serif;
+                font-size: 13px;
+            }}
+            QHeaderView::section {{
+                background-color: #414f42;
                 color: #ffffff;
-                gridline-color: #2c3e50;
-                border-radius: 8px;
-                border: 1px solid #2c3e50;
-            }
-            QHeaderView::section {
-                background-color: #1a242b;
-                color: #aed6f1;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
-                padding: 4px;
+                padding: 6px;
                 border: none;
-            }
-            QPushButton {
-                background-color: #3498db;
+            }}
+            QPushButton {{
+                background-color: #89301c;
                 color: white;
+                font-family: "{f_work}", sans-serif;
                 font-weight: bold;
-                border-radius: 8px;
-                padding: 8px 16px;
+                border-radius: 6px;
+                padding: 8px 18px;
                 border: none;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: #a23b24;
+            }}
         """)
         self._init_ui()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
-        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setContentsMargins(20, 20, 20, 20)
 
-        # Header
+        # Header (Poppins)
         user_header = f" for {self.user_name}" if self.user_name else ""
         header = QLabel(f"Hydration Dashboard{user_header} 📊", self)
-        h_font = QFont()
-        h_font.setPointSize(16)
-        h_font.setBold(True)
+        h_font = QFont(font_poppins(), 18, QFont.Weight.Bold)
         header.setFont(h_font)
+        header.setStyleSheet("color: #89301c; border: none;")
         layout.addWidget(header)
 
         # Top 3 Metric Cards
@@ -122,11 +133,11 @@ class StatsDialog(QDialog):
 
         layout.addLayout(cards_layout)
 
-        # History Title
+        # History Title (Newsreader 14pt)
         hist_lbl = QLabel("Past 7 Days History", self)
-        hist_font = QFont()
-        hist_font.setBold(True)
+        hist_font = QFont(font_newsreader(), 14, QFont.Weight.Bold)
         hist_lbl.setFont(hist_font)
+        hist_lbl.setStyleSheet("color: #414f42;")
         layout.addWidget(hist_lbl)
 
         # Table
@@ -144,6 +155,7 @@ class StatsDialog(QDialog):
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
         btn_close = QPushButton("Close", self)
+        btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.accept)
         btn_layout.addWidget(btn_close)
         layout.addLayout(btn_layout)

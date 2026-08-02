@@ -9,7 +9,7 @@ from src.config import resolve_asset_path
 from src.overlay import CharacterOverlayWindow
 from src.stats_dialog import StatsDialog
 from src.settings_dialog import SettingsDialog
-from src.profile_dialog import ProfileDialog
+from src.fonts import font_work_sans
 
 class WaterBuddyTray(QSystemTrayIcon):
     def __init__(self, config_manager, db_manager, parent: Optional[QObject] = None) -> None:
@@ -46,21 +46,25 @@ class WaterBuddyTray(QSystemTrayIcon):
 
     def _init_menu(self) -> None:
         menu = QMenu()
-        menu.setStyleSheet("""
-            QMenu {
-                background-color: #1a242b;
-                color: #ffffff;
-                border: 1px solid #2c3e50;
+        f_work = font_work_sans()
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: #f6f4ee;
+                color: #261e1b;
+                font-family: "{f_work}", sans-serif;
+                font-size: 13px;
+                border: 1px solid #414f42;
                 border-radius: 8px;
                 padding: 4px;
-            }
-            QMenu::item {
+            }}
+            QMenu::item {{
                 padding: 6px 20px;
                 border-radius: 4px;
-            }
-            QMenu::item:selected {
-                background-color: #3498db;
-            }
+            }}
+            QMenu::item:selected {{
+                background-color: #89301c;
+                color: #ffffff;
+            }}
         """)
 
         # 1. Trigger Test Reminder
@@ -87,15 +91,9 @@ class WaterBuddyTray(QSystemTrayIcon):
         act_settings.triggered.connect(self.show_settings_dialog)
         menu.addAction(act_settings)
 
-        # 5. Profile / Switch User (placed below Settings)
-        current_user = self.config.get_current_user()
-        self.act_profile = QAction(f"Switch User ({current_user})", self)
-        self.act_profile.triggered.connect(self.show_profile_dialog)
-        menu.addAction(self.act_profile)
-
         menu.addSeparator()
 
-        # 6. Quit
+        # 5. Quit
         act_quit = QAction("Quit Jal Lijiye", self)
         act_quit.triggered.connect(QApplication.instance().quit)
         menu.addAction(act_quit)
@@ -103,12 +101,21 @@ class WaterBuddyTray(QSystemTrayIcon):
         self.setContextMenu(menu)
 
     def _update_reminder_timer(self) -> None:
-        if self.config.get("focus_mode", False):
-            self.reminder_timer.stop()
-            return
-            
-        interval_ms = self.config.get("reminder_interval_minutes", 30) * 60 * 1000
-        self.reminder_timer.start(interval_ms)
+        try:
+            if self.config.get("focus_mode", False):
+                self.reminder_timer.stop()
+                return
+                
+            interval_mins = self.config.get("reminder_interval_minutes", 30)
+            try:
+                interval_mins = int(interval_mins)
+            except (ValueError, TypeError):
+                interval_mins = 30
+                
+            interval_ms = interval_mins * 60 * 1000
+            self.reminder_timer.start(interval_ms)
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error updating reminder timer: {e}")
 
     def trigger_reminder(self) -> None:
         """Manually triggers character walk-in overlay."""
@@ -120,7 +127,7 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_drink_confirmed(self) -> None:
         """Callback when user confirms drinking water."""
         try:
-            user_name = self.config.get_current_user()
+            user_name = self.config.get_user_name()
             self.db.log_drink(user_name=user_name)
             self._update_reminder_timer()
         except Exception as e:
@@ -129,7 +136,12 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_snooze_requested(self) -> None:
         """Callback when user clicks 'Snooze'."""
         try:
-            snooze_ms = self.config.get("snooze_duration_minutes", 10) * 60 * 1000
+            snooze_mins = self.config.get("snooze_duration_minutes", 10)
+            try:
+                snooze_mins = int(snooze_mins)
+            except (ValueError, TypeError):
+                snooze_mins = 10
+            snooze_ms = snooze_mins * 60 * 1000
             self.reminder_timer.start(snooze_ms)
         except Exception as e:
             print(f"[WaterBuddyTray] Error in snooze: {e}")
@@ -144,37 +156,31 @@ class WaterBuddyTray(QSystemTrayIcon):
     def _on_session_tick(self) -> None:
         """Increments active laptop session time by 60 seconds in SQLite for active user."""
         try:
-            user_name = self.config.get_current_user()
+            user_name = self.config.get_user_name()
             self.db.add_session_time(60, user_name=user_name)
         except Exception as e:
             print(f"[WaterBuddyTray] Error in session tick: {e}")
 
-    def show_profile_dialog(self) -> None:
-        dialog = ProfileDialog(self.config)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        if dialog.exec() == ProfileDialog.DialogCode.Accepted:
-            current_user = self.config.get_current_user()
-            self.act_profile.setText(f"Switch User ({current_user})")
-
     def show_stats_dialog(self) -> None:
-        user_name = self.config.get_current_user()
-        dialog = StatsDialog(self.db, user_name=user_name)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        dialog.exec()
+        try:
+            user_name = self.config.get_user_name()
+            dialog = StatsDialog(self.db, user_name=user_name)
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            QApplication.setActiveWindow(dialog)
+            dialog.exec()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error showing stats dialog: {e}")
 
     def show_settings_dialog(self) -> None:
-        dialog = SettingsDialog(self.config)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        QApplication.setActiveWindow(dialog)
-        if dialog.exec() == SettingsDialog.DialogCode.Accepted:
-            self._update_reminder_timer()
-            current_user = self.config.get_current_user()
-            self.act_profile.setText(f"Switch User ({current_user})")
+        try:
+            dialog = SettingsDialog(self.config)
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            QApplication.setActiveWindow(dialog)
+            if dialog.exec() == SettingsDialog.DialogCode.Accepted:
+                self._update_reminder_timer()
+        except Exception as e:
+            print(f"[WaterBuddyTray] Error showing settings dialog: {e}")

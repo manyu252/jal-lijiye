@@ -3,7 +3,8 @@ from typing import Optional
 from PyQt6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve, QTimer, pyqtSignal
 from PyQt6.QtGui import QMovie, QGuiApplication, QFont
 from PyQt6.QtWidgets import (
-    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame)
+    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
+)
 from src.config import resolve_asset_path
 
 class ComicSpeechBubble(QFrame):
@@ -19,7 +20,7 @@ class ComicSpeechBubble(QFrame):
             QLabel {
                 color: #1a242b;
                 font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                font-size: 15px;
+                font-size: 14px;
                 font-weight: bold;
                 border: none;
                 background: transparent;
@@ -84,6 +85,7 @@ class CharacterOverlayWindow(QWidget):
 
         # Text: "Jal lijiye! 💧"
         self.lbl_title = QLabel("Jal lijiye! 💧", self.bubble)
+        self.lbl_title.setWordWrap(True)
         self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         bubble_layout.addWidget(self.lbl_title)
 
@@ -143,23 +145,52 @@ class CharacterOverlayWindow(QWidget):
         except Exception as e:
             print(f"[Overlay] Error playing GIF: {e}")
 
+    def _get_gif_duration_ms(self) -> int:
+        """Calculates total GIF duration in milliseconds. Defaults to 3000 ms if invalid."""
+        if not self.movie or not self.movie.isValid():
+            return 3000
+        frame_count = self.movie.frameCount()
+        if frame_count <= 0:
+            return 3000
+        total_ms = 0
+        for i in range(frame_count):
+            self.movie.jumpToFrame(i)
+            delay = self.movie.nextFrameDelay()
+            total_ms += delay if delay > 0 else 100
+        self.movie.jumpToFrame(0)
+        return total_ms if total_ms > 0 else 3000
+
     def show_reminder(self) -> None:
-        """Starts the walk-in animation from the far left screen edge."""
+        """Starts the walk-in animation from configured screen corner."""
         try:
             screen = QGuiApplication.primaryScreen()
             if not screen:
                 return
                 
             geo = screen.availableGeometry()
-            
             width = 330
             height = 310
             self.resize(width, height)
             
-            start_x = geo.x()
-            target_x = geo.x() + 30
-            y_pos = geo.y() + geo.height() - height - 10
+            position = self.config.get("screen_position", "bottom_left")
             
+            if position == "top_left":
+                start_x = geo.x() - width
+                target_x = geo.x() + 30
+                y_pos = geo.y() + 10
+            elif position == "bottom_right":
+                start_x = geo.x() + geo.width()
+                target_x = geo.x() + geo.width() - width - 30
+                y_pos = geo.y() + geo.height() - height - 10
+            elif position == "top_right":
+                start_x = geo.x() + geo.width()
+                target_x = geo.x() + geo.width() - width - 30
+                y_pos = geo.y() + 10
+            else:  # bottom_left (Default)
+                start_x = geo.x() - width
+                target_x = geo.x() + 30
+                y_pos = geo.y() + geo.height() - height - 10
+
             self.move(start_x, y_pos)
             self.bubble.hide()
             
@@ -168,8 +199,12 @@ class CharacterOverlayWindow(QWidget):
             self.raise_()
             self.activateWindow()
 
+            # Dynamic duration: If GIF < 3s, use GIF length; if GIF > 3s, cut at 3s
+            gif_duration = self._get_gif_duration_ms()
+            anim_duration = min(gif_duration, 3000)
+
             self.pos_anim = QPropertyAnimation(self, b"pos")
-            self.pos_anim.setDuration(3000)
+            self.pos_anim.setDuration(anim_duration)
             self.pos_anim.setStartValue(QPoint(start_x, y_pos))
             self.pos_anim.setEndValue(QPoint(target_x, y_pos))
             self.pos_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
@@ -184,11 +219,17 @@ class CharacterOverlayWindow(QWidget):
                 self.movie.setPaused(True)
                 
             user_name = self.config.get_current_user()
-            if user_name and user_name.lower() != "default":
-                self.lbl_title.setText(f"Jal lijiye, {user_name}! 💧")
+            custom_msg = self.config.get("custom_message", "").strip()
+            
+            if custom_msg:
+                final_text = custom_msg.replace("{name}", user_name)
             else:
-                self.lbl_title.setText("Jal lijiye! 💧")
+                if user_name and user_name.lower() != "default":
+                    final_text = f"Jal lijiye, {user_name}! 💧"
+                else:
+                    final_text = "Jal lijiye! 💧"
 
+            self.lbl_title.setText(final_text)
             self.bubble.show()
         except Exception as e:
             print(f"[Overlay] Error in walk-in finished: {e}")
@@ -204,21 +245,34 @@ class CharacterOverlayWindow(QWidget):
         self._walk_out()
 
     def _walk_out(self) -> None:
-        self.bubble.hide()
-        self._play_gif("asset_exit_gif")
-        screen = QGuiApplication.primaryScreen()
-        if not screen:
-            self.hide()
-            return
+        try:
+            self.bubble.hide()
+            self._play_gif("asset_exit_gif")
+            screen = QGuiApplication.primaryScreen()
+            if not screen:
+                self.hide()
+                return
+                
+            geo = screen.availableGeometry()
+            current_pos = self.pos()
+            position = self.config.get("screen_position", "bottom_left")
             
-        geo = screen.availableGeometry()
-        current_pos = self.pos()
-        end_x = geo.x() - self.width() - 10
-        
-        self.pos_anim = QPropertyAnimation(self, b"pos")
-        self.pos_anim.setDuration(2500)  # 2.5 seconds walk-out
-        self.pos_anim.setStartValue(current_pos)
-        self.pos_anim.setEndValue(QPoint(end_x, current_pos.y()))
-        self.pos_anim.setEasingCurve(QEasingCurve.Type.InQuad)
-        self.pos_anim.finished.connect(self.hide)
-        self.pos_anim.start()
+            if "right" in position:
+                end_x = geo.x() + geo.width() + 10
+            else:
+                end_x = geo.x() - self.width() - 10
+            
+            # Dynamic duration for exit GIF
+            gif_duration = self._get_gif_duration_ms()
+            anim_duration = min(gif_duration, 2500)
+
+            self.pos_anim = QPropertyAnimation(self, b"pos")
+            self.pos_anim.setDuration(anim_duration)
+            self.pos_anim.setStartValue(current_pos)
+            self.pos_anim.setEndValue(QPoint(end_x, current_pos.y()))
+            self.pos_anim.setEasingCurve(QEasingCurve.Type.InQuad)
+            self.pos_anim.finished.connect(self.hide)
+            self.pos_anim.start()
+        except Exception as e:
+            print(f"[Overlay] Error in walk out: {e}")
+            self.hide()

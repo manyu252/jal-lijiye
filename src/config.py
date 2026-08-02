@@ -34,6 +34,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "snooze_duration_minutes": 10,
     "focus_mode": False,
     "current_user": "Default",
+    "custom_message": "",
+    "screen_position": "bottom_left",
     "asset_walk_gif": "assets/walk.gif",
     "asset_exit_gif": "assets/exit.gif",
     "asset_icon": "assets/icon.png",

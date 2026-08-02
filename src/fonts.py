@@ -1,6 +1,6 @@
 from typing import Dict
 from PyQt6.QtCore import QCoreApplication
-from PyQt6.QtGui import QFontDatabase
+from PyQt6.QtGui import QFontDatabase, QFont
 
 _FONT_CACHE: Dict[str, str] = {}
 
@@ -35,3 +35,11 @@ def font_newsreader() -> str:
 
 def font_work_sans() -> str:
     return get_font_family("Work Sans", "Helvetica Neue")
+
+def get_system_font(point_size: int = 13, bold: bool = False) -> QFont:
+    """Returns a native system QFont with preferred fallbacks."""
+    family = get_font_family("Helvetica Neue", "Segoe UI")
+    font = QFont(family, point_size)
+    font.setBold(bold)
+    return font
+

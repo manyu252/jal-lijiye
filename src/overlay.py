@@ -12,30 +12,27 @@ class ComicSpeechBubble(QFrame):
     """Custom speech bubble widget with comic style border and pointing tail."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        app_font = get_system_font(13)
-        bold_font = get_system_font(14, bold=True)
-        btn_font = get_system_font(13, bold=True)
 
-        font_family = app_font.family()
+        font_stack = '"Poppins", "Work Sans", "Helvetica Neue", "Segoe UI", Arial, sans-serif'
 
         self.setStyleSheet(f"""
             QFrame {{
                 background-color: #ffffff;
-                border: 2.5px solid #2c3e50;
+                border: 2.5px solid #89301c;
                 border-radius: 14px;
             }}
             QLabel {{
-                color: #1a242b;
-                font-family: "{font_family}", sans-serif;
-                font-size: 14px;
+                color: #89301c;
+                font-family: {font_stack};
+                font-size: 15px;
                 font-weight: bold;
                 border: none;
                 background: transparent;
             }}
             QPushButton#btn_drink {{
-                background-color: #27ae60;
+                background-color: #89301c;
                 color: #ffffff;
-                font-family: "{font_family}", sans-serif;
+                font-family: {font_stack};
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
@@ -43,12 +40,12 @@ class ComicSpeechBubble(QFrame):
                 border: none;
             }}
             QPushButton#btn_drink:hover {{
-                background-color: #2ecc71;
+                background-color: #a03821;
             }}
             QPushButton#btn_snooze {{
-                background-color: #7f8c8d;
+                background-color: #414f42;
                 color: #ffffff;
-                font-family: "{font_family}", sans-serif;
+                font-family: {font_stack};
                 font-weight: bold;
                 font-size: 13px;
                 border-radius: 8px;
@@ -56,7 +53,7 @@ class ComicSpeechBubble(QFrame):
                 border: none;
             }}
             QPushButton#btn_snooze:hover {{
-                background-color: #95a5a6;
+                background-color: #4e5e4f;
             }}
         """)
 

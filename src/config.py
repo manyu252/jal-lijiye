@@ -94,10 +94,16 @@ class ConfigManager:
         """Returns the active user profile name."""
         return self.get("current_user", "Default")
 
+    def get_user_name(self) -> str:
+        return self.get_current_user()
+
     def set_current_user(self, name: str) -> None:
         """Sets active user profile name."""
         clean_name = name.strip() if name and name.strip() else "Default"
         self.set("current_user", clean_name)
+
+    def set_user_name(self, name: str) -> None:
+        self.set_current_user(name)
 
     def get_user_gif(self, asset_type: str) -> str:
         """

@@ -5,6 +5,14 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-02
+
+### Added
+- **Dynamic Walk-In GIF Timing**: Walk-in animation automatically syncs duration with character GIF length (auto-cut at 3.0s max).
+- **Exclusive 4-Corner Screen Position Picker**: Choose screen entry/exit location in Settings (Bottom-Left, Top-Left, Bottom-Right, Top-Right).
+- **Custom Speech Bubble Text**: Support for custom reminder text with `{name}` template replacement.
+- **Brand Palette Restoration**: Restored warm paper light theme `#f6f4ee`, terracotta red `#89301c`, and sage green `#414f42`.
+
 ## [1.2.1] - 2026-07-28
 
 ### Fixed

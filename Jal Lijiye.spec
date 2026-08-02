@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
 
+is_mac = sys.platform == 'darwin'
 
 a = Analysis(
     ['main.py'],
@@ -43,9 +45,15 @@ coll = COLLECT(
     upx_exclude=[],
     name='Jal Lijiye',
 )
-app = BUNDLE(
-    coll,
-    name='Jal Lijiye.app',
-    icon='assets/icon.png',
-    bundle_identifier=None,
-)
+if is_mac:
+    app = BUNDLE(
+        coll,
+        name='Jal Lijiye.app',
+        icon='assets/icon.png',
+        bundle_identifier='com.jallijiye.app',
+        info_plist={
+            'CFBundleShortVersionString': '1.3.0',
+            'CFBundleVersion': '1.3.0',
+            'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
+        },
+    )

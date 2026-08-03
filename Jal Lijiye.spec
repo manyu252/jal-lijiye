@@ -2,6 +2,8 @@
 import sys
 
 is_mac = sys.platform == 'darwin'
+asset_sep = ';' if sys.platform == 'win32' else ':'
+icon_file = 'assets/icon.ico' if sys.platform == 'win32' else 'assets/icon.png'
 
 a = Analysis(
     ['main.py'],
@@ -14,25 +16,11 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'PyQt6.QtQml', 'PyQt6.QtQuick', 'PyQt6.QtNetwork', 'PyQt6.QtPdf',
-        'PyQt6.QtSvg', 'PyQt6.QtDBus', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
-        'PyQt6.QtSensors', 'PyQt6.QtBluetooth', 'PyQt6.QtLocation',
-        'PyQt6.QtMultimedia', 'PyQt6.QtWebEngineCore', 'PyQt6.QtDesigner',
-        'PyQt6.QtHelp', 'cv2', 'numpy', 'scipy', 'matplotlib'
+        'PyQt6.QtSvg', 'PyQt6.QtDBus', 'PyQt6.QtTest', 'cv2', 'numpy', 'scipy'
     ],
     noarchive=False,
     optimize=0,
 )
-
-# Completely strip Qt permission, positioning, and location plugins from both binaries and datas
-def is_permission_or_location(item):
-    name = str(item[0]).lower()
-    src = str(item[1]).lower() if len(item) > 1 else ""
-    forbidden = ['permission', 'positioning', 'location', 'qdarwinpermissionplugin']
-    return any(k in name or k in src for k in forbidden)
-
-a.binaries = [x for x in a.binaries if not is_permission_or_location(x)]
-a.datas = [x for x in a.datas if not is_permission_or_location(x)]
-
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -51,7 +39,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets/icon.png'],
+    icon=[icon_file],
 )
 coll = COLLECT(
     exe,
@@ -72,8 +60,8 @@ if is_mac:
             'CFBundleName': 'Jal Lijiye',
             'CFBundleDisplayName': 'Jal Lijiye',
             'CFBundleIdentifier': 'com.jallijiye.app',
-            'CFBundleShortVersionString': '1.3.2',
-            'CFBundleVersion': '1.3.2',
+            'CFBundleShortVersionString': '1.3.3',
+            'CFBundleVersion': '1.3.3',
             'NSHighResolutionCapable': 'True',
             'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
         },

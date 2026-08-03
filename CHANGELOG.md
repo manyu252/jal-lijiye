@@ -5,6 +5,11 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-08-03
+
+### Fixed
+- **CI/CD Build Command Alignment**: Replaced `.spec` file build step in GitHub Actions `.github/workflows/release.yml` with explicit PyInstaller CLI flags matching `build_app.sh`, ensuring GitHub Releases produce the exact same working 50-70 MB executable bundles as local builds.
+
 ## [1.3.2] - 2026-08-03
 
 ### Fixed

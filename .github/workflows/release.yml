@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset_name: Jal-Lijiye-Windows
+            asset_name: JalLijiye-Windows
           - os: macos-latest
-            asset_name: Jal-Lijiye-macOS
+            asset_name: JalLijiye-macOS
 
     steps:
       - name: Checkout Code
@@ -37,25 +37,56 @@ jobs:
           pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir pyinstaller
 
-      - name: Diagnostic Environment Inspection
+      - name: Build macOS Application
+        if: runner.os == 'macOS'
         run: |
-          pip list
-          python -c "import PyQt6; print('PyQt6 Path:', PyQt6.__file__)"
+          pyinstaller --clean --noconfirm --onedir --windowed \
+            --name "Jal Lijiye" \
+            --icon "assets/icon.png" \
+            --add-data "assets:assets" \
+            --exclude-module "PyQt6.QtQml" \
+            --exclude-module "PyQt6.QtQuick" \
+            --exclude-module "PyQt6.QtNetwork" \
+            --exclude-module "PyQt6.QtPdf" \
+            --exclude-module "PyQt6.QtSvg" \
+            --exclude-module "PyQt6.QtDBus" \
+            --exclude-module "PyQt6.QtTest" \
+            --exclude-module "cv2" \
+            --exclude-module "numpy" \
+            --exclude-module "scipy" \
+            main.py
 
-      - name: Build Application Bundle with PyInstaller Spec
+      - name: Build Windows Executable
+        if: runner.os == 'Windows'
         run: |
-          pyinstaller --clean --noconfirm "Jal Lijiye.spec"
+          pyinstaller --clean --noconfirm --onedir --windowed \
+            --name "Jal Lijiye" \
+            --icon "assets/icon.ico" \
+            --add-data "assets;assets" \
+            --exclude-module "PyQt6.QtQml" \
+            --exclude-module "PyQt6.QtQuick" \
+            --exclude-module "PyQt6.QtNetwork" \
+            --exclude-module "PyQt6.QtPdf" \
+            --exclude-module "PyQt6.QtSvg" \
+            --exclude-module "PyQt6.QtDBus" \
+            --exclude-module "PyQt6.QtTest" \
+            --exclude-module "cv2" \
+            --exclude-module "numpy" \
+            --exclude-module "scipy" \
+            main.py
 
-      - name: Zip Windows Artifact
+      - name: Package Windows Release Asset
         if: runner.os == 'Windows'
         shell: powershell
         run: |
           Compress-Archive -Path "dist/Jal Lijiye" -DestinationPath "${{ matrix.asset_name }}.zip"
 
-      - name: Zip macOS App
+      - name: Package macOS Release Asset (Preserve Symlinks)
         if: runner.os == 'macOS'
         run: |
-          cd dist && zip -r "../${{ matrix.asset_name }}.zip" "Jal Lijiye.app"
+          cd dist
+          # -r = recursive, -y = preserve symlinks (prevents bloat and bundle crash)
+          zip -r -y "../${{ matrix.asset_name }}.zip" "Jal Lijiye.app"
 
       - name: Upload Workflow Artifact
         uses: actions/upload-artifact@v4

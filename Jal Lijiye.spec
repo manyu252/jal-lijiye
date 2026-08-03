@@ -5,6 +5,27 @@ is_mac = sys.platform == 'darwin'
 asset_sep = ';' if sys.platform == 'win32' else ':'
 icon_file = 'assets/icon.ico' if sys.platform == 'win32' else 'assets/icon.png'
 
+# Heavy or crashing native Qt frameworks and permission plugins to strip from release builds
+EXCLUDED_BINARIES = [
+    'qdarwinpermissionplugin_location',
+    'qdarwinpermissionplugin',
+    'QtWebEngineCore',
+    'Qt3D',
+    'QtQuick',
+    'QtQml',
+    'QtMultimedia',
+    'QtDesigner',
+    'QtPdf',
+    'QtPositioning',
+    'QtSensors',
+    'QtBluetooth',
+    'QtLocation',
+    'QtTest',
+    'QtDBus',
+    'QtSvg',
+    'QtNetwork',
+]
+
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -16,11 +37,27 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'PyQt6.QtQml', 'PyQt6.QtQuick', 'PyQt6.QtNetwork', 'PyQt6.QtPdf',
-        'PyQt6.QtSvg', 'PyQt6.QtDBus', 'PyQt6.QtTest', 'cv2', 'numpy', 'scipy'
+        'PyQt6.QtSvg', 'PyQt6.QtDBus', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+        'PyQt6.QtSensors', 'PyQt6.QtBluetooth', 'PyQt6.QtLocation',
+        'PyQt6.QtMultimedia', 'PyQt6.QtWebEngineCore', 'PyQt6.QtDesigner',
+        'PyQt6.QtHelp', 'cv2', 'numpy', 'scipy', 'matplotlib'
     ],
     noarchive=False,
     optimize=0,
 )
+
+# Strip native libraries and plugin binaries matching excluded list
+a.binaries = [
+    b for b in a.binaries 
+    if not any(excluded.lower() in b[0].lower() for excluded in EXCLUDED_BINARIES)
+]
+
+# Strip data/plugin entries matching excluded list
+a.datas = [
+    d for d in a.datas 
+    if not any(excluded.lower() in d[0].lower() for excluded in EXCLUDED_BINARIES)
+]
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -60,8 +97,8 @@ if is_mac:
             'CFBundleName': 'Jal Lijiye',
             'CFBundleDisplayName': 'Jal Lijiye',
             'CFBundleIdentifier': 'com.jallijiye.app',
-            'CFBundleShortVersionString': '1.3.3',
-            'CFBundleVersion': '1.3.3',
+            'CFBundleShortVersionString': '1.3.4',
+            'CFBundleVersion': '1.3.4',
             'NSHighResolutionCapable': 'True',
             'NSHumanReadableCopyright': 'Copyright © 2026 Jal Lijiye Team',
         },

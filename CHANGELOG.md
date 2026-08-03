@@ -5,6 +5,12 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-08-03
+
+### Fixed
+- **PyInstaller Binary Framework Stripping**: Added explicit `EXCLUDED_BINARIES` list in `Jal Lijiye.spec` filtering both `a.binaries` and `a.datas` to purge unused Qt frameworks (`QtWebEngineCore`, `Qt3D`, `QtQuick`) and macOS permission plugins (`qdarwinpermissionplugin_location`).
+- **CI Build Cache Cleanliness**: Added `--clean` and `--no-cache-dir` flags to `.github/workflows/release.yml` with environment diagnostics.
+
 ## [1.3.3] - 2026-08-03
 
 ### Fixed

@@ -1,4 +1,9 @@
+import os
 import sys
+
+if sys.platform == 'darwin':
+    os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.permissions=false"
+
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon

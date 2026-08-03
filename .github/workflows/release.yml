@@ -58,21 +58,22 @@ jobs:
 
       - name: Build Windows Executable
         if: runner.os == 'Windows'
+        shell: cmd
         run: |
-          pyinstaller --clean --noconfirm --onedir --windowed \
-            --name "Jal Lijiye" \
-            --icon "assets/icon.ico" \
-            --add-data "assets;assets" \
-            --exclude-module "PyQt6.QtQml" \
-            --exclude-module "PyQt6.QtQuick" \
-            --exclude-module "PyQt6.QtNetwork" \
-            --exclude-module "PyQt6.QtPdf" \
-            --exclude-module "PyQt6.QtSvg" \
-            --exclude-module "PyQt6.QtDBus" \
-            --exclude-module "PyQt6.QtTest" \
-            --exclude-module "cv2" \
-            --exclude-module "numpy" \
-            --exclude-module "scipy" \
+          pyinstaller --clean --noconfirm --onedir --windowed ^
+            --name "Jal Lijiye" ^
+            --icon "assets/icon.ico" ^
+            --add-data "assets;assets" ^
+            --exclude-module "PyQt6.QtQml" ^
+            --exclude-module "PyQt6.QtQuick" ^
+            --exclude-module "PyQt6.QtNetwork" ^
+            --exclude-module "PyQt6.QtPdf" ^
+            --exclude-module "PyQt6.QtSvg" ^
+            --exclude-module "PyQt6.QtDBus" ^
+            --exclude-module "PyQt6.QtTest" ^
+            --exclude-module "cv2" ^
+            --exclude-module "numpy" ^
+            --exclude-module "scipy" ^
             main.py
 
       - name: Package Windows Release Asset

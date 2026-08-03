@@ -5,6 +5,11 @@ All notable changes to **Jal Lijiye** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2026-08-03
+
+### Fixed
+- **macOS Zip Symlink Preservation**: Added `-y` flag (`zip -r -y`) in GitHub Actions release workflow to preserve macOS Framework symlinks. Prevents recursive framework file duplication (which bloated zips from 50 MB to 394 MB) and resolves dyld launch crash.
+
 ## [1.3.4] - 2026-08-03
 
 ### Fixed
